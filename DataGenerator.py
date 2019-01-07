@@ -282,15 +282,25 @@ class Field(Model):
     # { {1,2}, {2, 3}, {3, 4}}
     # width - number of columns = 3
     # height - number of rows   = 2
-    def printCoordsArray(self, arr, width, height, elemIdx=None):
+    def printCoordsArray(self, arr, elemIdx=None, printAsInt=False):
+            width = len(arr)
+            height = len(arr[0])
+
             for i in reversed(range(height)):
                 line = ""
                 for j in range(width):
+                    val = 0
                     if(elemIdx != None):
-                        line += str(arr[j][i][elemIdx]) + " "
+                        val = arr[j][i][elemIdx]
                     else:
-                        line += str(arr[j][i])  + " "
-                print(line)       
+                        val = arr[j][i]
+
+                    if(not printAsInt and (isinstance(val, float) or isinstance(val, np.float32))):
+                        line += "{0:6.2f} ".format(val) 
+                    else:
+                        line += "{0:6.0f} ".format(val)
+                print(line)
+            print()      
 
 
     # vr - viewRadius
@@ -354,6 +364,45 @@ class Field(Model):
         self.removeDead(self.foxes, self.scheduleFox)
 
 
+    def getShift(self, curentPos, radius):
+        return range(curentPos-radius, curentPos+radius+1)
+
+    def getLables(self, states):
+        feedback = []
+        vr = self.viewRadius
+        mr = 1  # move radius - how far the agent can step from curent position
+        
+        for i in range(len(states)): # calculating feedback for each state
+            label = [[0 for i in range(vr+1)] for j in range(vr+1)]
+            state = states[i]
+            self.printCoordsArray(state, 0)
+            self.printCoordsArray(state, 1, True)
+
+            # calculating the feedback for each direction where the agend can go
+            for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
+                for dy in self.getShift(vr, mr): # samve for y coordinate  
+                    lbl = 0.0          
+                    for cx in self.getShift(dx, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                        for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                            cell = state[cx][cy]
+                            if(cx==dx and cy==dy): #this is the direction cel
+                                if(cell[1]==FoxAgentType):
+                                    lbl += -4
+
+                                if((cx!=vr or cy!=vr) and cell[1]==RabitAgentType): # first condition to avoid that the agent (whose state we analize) adds a minus to his current location
+                                    lbl += -1
+                                lbl += cell[0]
+                            else:
+                                if(cell[1]==FoxAgentType):
+                                    lbl -= 2
+                                lbl += cell[0] * 0.1
+                            
+                    label[dx-1][dy-1] = lbl
+            self.printCoordsArray(label)
+            feedback.append(label)
+
+        return feedback
+
     def step(self):
         print("RCount " + str(len(self.rabits)) )
         print("FCount " + str(len(self.foxes)) )
@@ -370,7 +419,8 @@ class Field(Model):
 
             if self.trainingMode:  # get labels for rabits
                 labelR = self.get_Lables(self.rabits)
-
+                
+            labelR1 = self.getLables(dataR)
             self.setNextPos(self.rabits, rabitMoves)        
             self.scheduleRabit.step()
             self.removeDeadRabits() # removing rabits that have died of starvation or commited suicide
@@ -525,5 +575,5 @@ def startTraining():
 
 if __name__ == "__main__":
     #initModels()
-    #startTraining()
-    visualize()
+    startTraining()
+    #visualize()
