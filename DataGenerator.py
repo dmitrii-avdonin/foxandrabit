@@ -284,16 +284,17 @@ class Field(Model):
     # height - number of rows   = 2
     def printCoordsArray(self, arr, elemIdx=None, printAsInt=False):
             width = len(arr)
-            height = len(arr[0])
+            hasColumns = isinstance(arr[0], (list,)) or isinstance(arr[0], (np.ndarray,))
+            height = len(arr[0]) if hasColumns else 1
 
             for i in reversed(range(height)):
                 line = ""
                 for j in range(width):
                     val = 0
                     if(elemIdx != None):
-                        val = arr[j][i][elemIdx]
+                        val = arr[j][i][elemIdx] if hasColumns else arr[j][elemIdx]
                     else:
-                        val = arr[j][i]
+                        val = arr[j][i] if hasColumns else arr[j]
 
                     if(not printAsInt and (isinstance(val, float) or isinstance(val, np.float32))):
                         line += "{0:6.2f} ".format(val) 
@@ -358,16 +359,28 @@ class Field(Model):
             agentList.remove(a)
 
     def removeDeadRabits(self):
-        self.removeDead(self.rabits, self.scheduleRabit)
+        self.removeDead(self.rabits, self.scheduleRabit)                
+            
 
     def removeDeadFoxes(self):
         self.removeDead(self.foxes, self.scheduleFox)
+
+    def describeSituation(self, data, direction):
+        label = self.getLablesR(data, True)
+        for i in range(len(label)):
+            x= direction[i] % 3
+            y= direction[i] // 3 
+            if(label[i][x][y]<0):
+                self.printCoordsArray(data[i], 1, True) # printing agents location
+                self.printCoordsArray(label[i]) # printing 2D labels for each directions
+                print("predicted direction: " + str(direction[i] + 1))
+                print("===================================================")        
 
 
     def getShift(self, curentPos, radius):
         return range(curentPos-radius, curentPos+radius+1)
 
-    def getLables(self, states):
+    def getLablesR(self, states, returnMatix=False):
         feedback = []
         vr = self.viewRadius
         mr = 1  # move radius - how far the agent can step from curent position
@@ -375,8 +388,8 @@ class Field(Model):
         for i in range(len(states)): # calculating feedback for each state
             label = [[0 for i in range(vr+1)] for j in range(vr+1)]
             state = states[i]
-            self.printCoordsArray(state, 0)
-            self.printCoordsArray(state, 1, True)
+            #self.printCoordsArray(state, 0) #printing food amount on cells
+            #self.printCoordsArray(state, 1, True) # printing agents location
 
             # calculating the feedback for each direction where the agend can go
             for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
@@ -391,17 +404,85 @@ class Field(Model):
 
                                 if((cx!=vr or cy!=vr) and cell[1]==RabitAgentType): # first condition to avoid that the agent (whose state we analize) adds a minus to his current location
                                     lbl += -1
-                                lbl += cell[0]
+
+                                if(cell[1]==-1):  # a wall, cannot go there
+                                    lbl += -2
+                                else:
+                                    lbl += cell[0]
                             else:
                                 if(cell[1]==FoxAgentType):
                                     lbl -= 2
-                                lbl += cell[0] * 0.1
+                                if(cell[1]==-1):  # a wall, cannot go there
+                                    lbl += -1
+                                else:
+                                    lbl += cell[0] * 0.1
+
                             
                     label[dx-1][dy-1] = lbl
-            self.printCoordsArray(label)
-            feedback.append(label)
+            #self.printCoordsArray(label) # printing 2D labels for each directions
+            if returnMatix:
+               feedback.append(label)
+            else:             
+                flatLabel = self.flatFeedback(label)
+                #self.printCoordsArray(flatLabel) # printing 1D labels for each directions
+                feedback.append(flatLabel)
 
-        return feedback
+        return np.array(feedback, dtype=np.float32)
+
+
+
+    def getLablesF(self, states):
+        feedback = []
+        vr = self.viewRadius
+        mr = 1  # move radius - how far the agent can step from curent position
+        
+        for i in range(len(states)): # calculating feedback for each state
+            label = [[0 for i in range(vr+1)] for j in range(vr+1)]
+            state = states[i]
+            #self.printCoordsArray(state, 0) #printing food amount on cells
+            #self.printCoordsArray(state, 1, True) # printing agents location
+
+            # calculating the feedback for each direction where the agend can go
+            for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
+                for dy in self.getShift(vr, mr): # samve for y coordinate  
+                    lbl = 0.0          
+                    for cx in self.getShift(dx, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                        for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                            cell = state[cx][cy]
+                            if(cx==dx and cy==dy): #this is the direction cel
+                                if(cell[1]==RabitAgentType):
+                                    lbl += 2
+
+                                if((cx!=vr or cy!=vr) and cell[1]==FoxAgentType): # first condition to avoid that the agent (whose state we analize) adds a minus to his current location
+                                    lbl += -1
+                                if(cell[1]==-1):  # a wall, cannot go there
+                                    lbl += -1
+                            else:
+                                if(cell[1]==RabitAgentType):
+                                    lbl += 1
+                                if(cell[1]==-1):  # a wall, cannot go there
+                                    lbl += -0.5                                    
+
+                            
+                    label[dx-1][dy-1] = lbl
+            #self.printCoordsArray(label) # printing 2D labels for each directions
+            flatLabel = self.flatFeedback(label)
+            #self.printCoordsArray(flatLabel) # printing 1D labels for each directions
+            feedback.append(flatLabel)
+
+        return np.array(feedback, dtype=np.float32) 
+
+    # converts a 3x3 feedback into a 1x9 form
+    # 3x3 (list of columns) feedback represents the directions like on keybord numpad 
+    # 1x9 will flatten the feedback like rearangig the numpad keys in a line in acending order 
+    def flatFeedback(self, fb):
+        fbWidth = 3       
+        fbHeight = 3
+        result = [0.] * 9
+        for y in range(fbHeight):
+            for x in range(fbWidth):
+                result[fbWidth*y + x] = fb[x][y]
+        return result
 
     def step(self):
         print("RCount " + str(len(self.rabits)) )
@@ -418,9 +499,12 @@ class Field(Model):
             rabitMoves = predict(dataR, True)
 
             if self.trainingMode:  # get labels for rabits
-                labelR = self.get_Lables(self.rabits)
-                
-            labelR1 = self.getLables(dataR)
+                labelR = self.getLablesR(dataR)
+                #labelR = self.get_Lables(self.rabits)
+            
+            if not self.trainingMode:
+                self.describeSituation(dataR, rabitMoves)
+
             self.setNextPos(self.rabits, rabitMoves)        
             self.scheduleRabit.step()
             self.removeDeadRabits() # removing rabits that have died of starvation or commited suicide
@@ -432,8 +516,9 @@ class Field(Model):
             foxMoves = predict(dataF, False)
 
             if self.trainingMode: # get labels for foxes
-                labelF = self.get_Lables(self.foxes)
-
+                labelF = self.getLablesF(dataF)
+                #labelF = self.get_Lables(self.foxes)
+            
             self.setNextPos(self.foxes, foxMoves)        
             self.scheduleFox.step()
 

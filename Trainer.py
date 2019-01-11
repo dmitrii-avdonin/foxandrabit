@@ -82,9 +82,9 @@ def cnn_model_fn(features, labels, mode):
 
 def getModelDir(isPrey):
     if isPrey:
-        return "/D/Projects/TensorFlow/PredatorPrey/PreyModel"
+        return "./PreyModel"
     else: 
-        return "/D/Projects/TensorFlow/PredatorPrey/PredModel"
+        return "./PredModel"
 
 
 def train( _data, _labels, isPrey, modelInitialization):

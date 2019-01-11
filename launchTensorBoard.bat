@@ -1,3 +1,3 @@
 
-start cmd /k tensorboard --port=6006 --logdir=/D/Projects/TensorFlow/PredatorPrey/PreyModel
-start cmd /k tensorboard --port=8008 --logdir=/D/Projects/TensorFlow/PredatorPrey/PredModel
+start cmd /k tensorboard --port=6006 --logdir=./PreyModel
+start cmd /k tensorboard --port=6007 --logdir=./PredModel
