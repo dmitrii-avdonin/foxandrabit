@@ -10,6 +10,8 @@ from Trainer import train
 from Trainer import predict
 from mesa.time import RandomActivation
 from mesa.space import SingleGrid
+from utils.VisualizeAgentEnvironment import visualizeAgentEnvironment
+
 
 class Field(Model):
     def __init__(self, width, height, num_rabits, num_foxes, viewRadius, mode):
@@ -163,6 +165,7 @@ class Field(Model):
     def describeSituation(self, data, direction):
         label = self.getLablesR(data, True)
         for i in range(len(label)):
+            # visualizeAgentEnvironment(data[i])
             x= direction[i] % 3
             y= direction[i] // 3 
             if(label[i][x][y]<0):
