@@ -27,6 +27,14 @@
             "program": "${workspaceFolder}/src/main.py",
             "args": ["generateData"],
             "console": "integratedTerminal"
-        }                
+        },
+        {
+            "name": "trainFromFile",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": ["trainFromFile"],
+            "console": "integratedTerminal"
+        }
     ]
 }

@@ -1,4 +1,4 @@
-import pandas as pd
+from utils.Utils import toNpArray, saveNpArrayToFile
 from settings import AgentType, Mode, vr
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
 from field.Field import Field
@@ -29,20 +29,21 @@ def generateTrainingDataSet():
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataR)>2000):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>20000):
             break
 
         if(len(field.rabits)<countR/4 or len(field.foxes)<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
-            field = Field(width, height, countR, countF, vr, Mode.DataGeneration)      
+            field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
 
-    dfDR = pd.DataFrame(trainDataR)
-    dfDR.to_csv(pathToDataR)
-    dfLR = pd.DataFrame(trainLabelsR)
-    dfLR.to_csv(pathToLabelR)
+        
+    trainDataR = toNpArray(trainDataR)
+    trainLabelsR = toNpArray(trainLabelsR)
+    trainDataF = toNpArray(trainDataF)
+    trainLabelsF = toNpArray(trainLabelsF)
 
-    dfDF = pd.DataFrame(trainDataF)
-    dfDF.to_csv(pathToDataF)
-    dfLF = pd.DataFrame(trainLabelsF)
-    dfLF.to_csv(pathToLabelF)
+    saveNpArrayToFile(pathToDataR, trainDataR)
+    saveNpArrayToFile(pathToLabelR, trainLabelsR)
+    saveNpArrayToFile(pathToDataF, trainDataF)
+    saveNpArrayToFile(pathToLabelF, trainLabelsF)
 
     return

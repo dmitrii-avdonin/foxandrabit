@@ -1,5 +1,5 @@
 
-
+import os
 
 vr = 2 # viewRadius: number of cell visible for estimating current situation 
 
@@ -11,11 +11,11 @@ RabitN = 600
 FoxN = 200
 
 
-pathToDataR = "./trainingData/dataR.csv"
-pathToDataF = "./trainingData/dataF.csv"
+pathToDataR = os.path.abspath(r"./trainingData/dataR.mat")
+pathToDataF = os.path.abspath(r"./trainingData/dataF.mat")
 
-pathToLabelR = "./trainingData/labelR.csv"
-pathToLabelF = "./trainingData/labelF.csv"
+pathToLabelR = os.path.abspath(r"./trainingData/labelR.mat")
+pathToLabelF = os.path.abspath(r"./trainingData/labelF.mat")
 
 class AgentType:
     Null = -1   # there is no agent

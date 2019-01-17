@@ -112,7 +112,7 @@ def train( _data, _labels, isPrey, modelInitialization):
         shuffle=True)
     mnist_classifier.train(
         input_fn=train_input_fn,
-        steps=4000 if not modelInitialization else 1,
+        steps=3000000 if not modelInitialization else 1,
         hooks=[logging_hook])
 
     # Evaluate the model and print results

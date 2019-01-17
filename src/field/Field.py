@@ -6,6 +6,7 @@ from agents.Rabit import Rabit
 from agents.Fox import Fox
 import numpy as np
 from settings import Mode, AgentType
+from utils.Utils import toNpArray
 from Trainer import train
 from Trainer import predict
 from mesa.time import RandomActivation
@@ -280,10 +281,6 @@ class Field(Model):
         return result
 
 
-    def toNpArray(self, lst):
-        return np.array(lst, dtype=np.float32)
-
-
     def step(self):
         print("RCount " + str(len(self.rabits)) )
         print("FCount " + str(len(self.foxes)) )
@@ -301,7 +298,7 @@ class Field(Model):
             self.clearAgentsInFiledCells() # scheduleRabit.step() will initialize the next filedCells with Rabits 
             
             data = self.getStatesR()
-            rabitMoves = predict(self.toNpArray(data), True)
+            rabitMoves = predict(toNpArray(data), True)
 
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration:  # get labels for rabits
                 labels = self.getLablesR(data)
@@ -315,11 +312,11 @@ class Field(Model):
             self.removeDeadRabits() # removing rabits that have died of starvation or commited suicide
 
             if self.mode==Mode.Training:
-                train(self.toNpArray(data), self.toNpArray(labels), True, False)        #train rabits
+                train(toNpArray(data), toNpArray(labels), True, False)        #train rabits
         else:
             agentType = AgentType.Fox
             data = self.getStatesF()
-            foxMoves = predict(self.toNpArray(data), False)
+            foxMoves = predict(toNpArray(data), False)
 
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration: # get labels for foxes
                 labels = self.getLablesF(data)
@@ -334,7 +331,7 @@ class Field(Model):
             self.increaseFoodInFiledCells() # grass is growing in cells
 
             if self.mode==Mode.Training:
-                train(self.toNpArray(data), self.toNpArray(labels), False, False)       #train foxes
+                train(toNpArray(data), toNpArray(labels), False, False)       #train foxes
 
         self.rabitsMove = not self.rabitsMove
         return (agentType, data, labels) 
