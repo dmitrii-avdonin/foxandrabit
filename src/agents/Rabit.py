@@ -11,14 +11,14 @@ class Rabit(BaseAgent):
     def eatGrassOnCurrentFiledCellAndEvaluateFullness(self):
         (x,y) = self.pos
         actualEat = self.model.cells[x][y].removeFood(Rabit.MaxEat)
-        self.tempFullness += actualEat
-        self.tempFullness -= Rabit.Hunger
-        if(self.tempFullness <= 0):
+        self.fullness += actualEat
+        self.fullness -= Rabit.Hunger
+        if(self.fullness <= 0):
             self.setDead()
 
     # posToGo - next position to go
     def makeStep(self, posToGo):
-        self.tempFullness = self.fullness
+        self.fullness = self.fullness
 
         if self.model.grid.out_of_bounds(posToGo):
             self.eatGrassOnCurrentFiledCellAndEvaluateFullness()
