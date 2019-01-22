@@ -165,8 +165,8 @@ class Field(Model):
 
     def describeSituation(self, data, direction):
         label = self.getLablesR(data, True)
-        for i in range(len(label)):
-            # visualizeAgentEnvironment(data[i])
+        #visualizeAgentEnvironment(data[0])
+        for i in range(len(label)):            
             x= direction[i] % 3
             y= direction[i] // 3 
             if(label[i][x][y]<0):

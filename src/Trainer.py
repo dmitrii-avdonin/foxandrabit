@@ -31,16 +31,29 @@ def cnn_model_fn(features, labels, mode):
     conv1 = tf.layers.conv2d(
         inputs=input_layer,
         filters=32,
-        kernel_size=[2, 2],
-        #padding="same",
+        kernel_size=[3, 3],
+        padding="same",
         activation=tf.nn.relu)
 
     pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
 
-    pool1_flat = tf.reshape(pool1, [-1, 2* 2 * 32])
+
+
+    # Convolutional Layer #2
+    conv2 = tf.layers.conv2d(
+        inputs=pool1,
+        filters=16,
+        kernel_size=[5, 5],
+        padding="same",
+        activation=tf.nn.relu)
+
+    pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+
+
+    pool1_flat = tf.reshape(pool2, [-1, 1* 1 * 16])
 
     # Dense Layer Densely connected layer
-    dense = tf.layers.dense(inputs=pool1_flat, units=1000, activation=tf.nn.relu)
+    dense = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
 
     
 
@@ -89,6 +102,9 @@ def getModelDir(isPrey):
 
 def train( _data, _labels, isPrey, modelInitialization):
     
+    trainingD, testD = _data[:80,:], _data[80:,:]
+    trainingL, testL = _labels[:80,:], _labels[80:,:]
+
     modelDir = getModelDir(isPrey)
 
     # Create the Estimator
@@ -105,20 +121,20 @@ def train( _data, _labels, isPrey, modelInitialization):
 
     # Train the model
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={"x": _data},
-        y=_labels,
+        x={"x": trainingD},
+        y=trainingL,
         batch_size=100 if not modelInitialization else 1,
         num_epochs=None,
         shuffle=True)
     mnist_classifier.train(
         input_fn=train_input_fn,
-        steps=3000000 if not modelInitialization else 1,
+        steps=100000 if not modelInitialization else 1,
         hooks=[logging_hook])
 
     # Evaluate the model and print results
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={"x": _data},
-        y=_labels,
+        x={"x": testD},
+        y=testL,
         num_epochs=1,
         shuffle=False)
     eval_results = mnist_classifier.evaluate(input_fn=eval_input_fn)

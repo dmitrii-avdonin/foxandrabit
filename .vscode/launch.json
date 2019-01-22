@@ -29,7 +29,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "trainFromFile",
+            "name": "TrainFromFile",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",

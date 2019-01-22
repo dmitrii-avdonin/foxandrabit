@@ -1,9 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.show(block = False)
+
 def visualizeAgentEnvironment(data):
     #Create coordinates
-    plt.axes().set_aspect('equal')
+    plt.clf()
+    plt.axes().set_aspect('equal')    
     x_coords = []
     y_coords = []
     step=0.5
@@ -60,7 +63,8 @@ def visualizeAgentEnvironment(data):
 
 
 
-    plt.show()
+    plt.show(block = False)
+    plt.pause(0.001)
 
 if __name__ == "__main__":
     data  = [[[0.1,0.,5. ],[0.9,0.,5.],[0.,2.,5.],[0.6,0.,5.],[0.9,0.,5.]],
