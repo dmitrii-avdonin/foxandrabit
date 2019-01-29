@@ -101,9 +101,10 @@ def getModelDir(isPrey):
 
 
 def train( _data, _labels, isPrey, modelInitialization):
-    
-    trainingD, testD = _data[:80,:], _data[80:,:]
-    trainingL, testL = _labels[:80,:], _labels[80:,:]
+    _90p = len(_data)//100 * 90
+
+    trainingD, testD = _data[:_90p,:], _data[_90p:,:]
+    trainingL, testL = _labels[:_90p,:], _labels[_90p:,:]
 
     modelDir = getModelDir(isPrey)
 
@@ -141,7 +142,7 @@ def train( _data, _labels, isPrey, modelInitialization):
     
     return eval_results
 
-def predict( _data, isPrey):
+def predict( _data, isPrey, getDirection=True):
     modelDir = getModelDir(isPrey)
 
     # Create the Estimator
@@ -163,5 +164,8 @@ def predict( _data, isPrey):
     allDir = []
     for result in eval_results: 
         allDir.append(result.get("round_results"))
-        directions.append(np.argmax(result.get("results")))
+        if getDirection:
+            directions.append(np.argmax(result.get("results")))
+        else:
+            directions.append(result.get("results"))
     return directions

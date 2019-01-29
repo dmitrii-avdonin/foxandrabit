@@ -6,7 +6,7 @@ from agents.Rabit import Rabit
 from agents.Fox import Fox
 import numpy as np
 from settings import Mode, AgentType
-from utils.Utils import toNpArray
+from utils.Utils import toNpArray, printCoordsArray
 from Trainer import train
 from Trainer import predict
 from mesa.time import RandomActivation
@@ -77,31 +77,6 @@ class Field(Model):
 
         return states
 
-    # { {1,2}, {2, 3}, {3, 4}}
-    # width - number of columns = 3
-    # height - number of rows   = 2
-    def printCoordsArray(self, arr, elemIdx=None, printAsInt=False):
-            width = len(arr)
-            hasColumns = isinstance(arr[0], (list,)) or isinstance(arr[0], (np.ndarray,))
-            height = len(arr[0]) if hasColumns else 1
-
-            for i in reversed(range(height)):
-                line = ""
-                for j in range(width):
-                    val = 0
-                    if(elemIdx != None):
-                        val = arr[j][i][elemIdx] if hasColumns else arr[j][elemIdx]
-                    else:
-                        val = arr[j][i] if hasColumns else arr[j]
-
-                    if(not printAsInt and (isinstance(val, float) or isinstance(val, np.float32))):
-                        line += "{0:6.2f} ".format(val) 
-                    else:
-                        line += "{0:6.0f} ".format(val)
-                print(line)
-            print()      
-
-
     # vr - viewRadius
     def get_neighborhood(self, pos, vr=-1):
         x, y = pos
@@ -170,8 +145,8 @@ class Field(Model):
             x= direction[i] % 3
             y= direction[i] // 3 
             if(label[i][x][y]<0):
-                self.printCoordsArray(data[i], 1, True) # printing agents location
-                self.printCoordsArray(label[i]) # printing 2D labels for each directions
+                printCoordsArray(data[i], 1, True) # printing agents location
+                printCoordsArray(label[i]) # printing 2D labels for each directions
                 print("predicted direction: " + str(direction[i] + 1))
                 print("===================================================")        
 
@@ -187,8 +162,8 @@ class Field(Model):
         for i in range(len(states)): # calculating feedback for each state
             label = [[0 for i in range(vr+1)] for j in range(vr+1)]
             state = states[i]
-            #self.printCoordsArray(state, 0) #printing food amount on cells
-            #self.printCoordsArray(state, 1, True) # printing agents location
+            #printCoordsArray(state, 0) #printing food amount on cells
+            #printCoordsArray(state, 1, True) # printing agents location
 
             # calculating the feedback for each direction where the agend can go
             for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
@@ -218,12 +193,12 @@ class Field(Model):
 
                             
                     label[dx-1][dy-1] = lbl
-            #self.printCoordsArray(label) # printing 2D labels for each directions
+            #printCoordsArray(label) # printing 2D labels for each directions
             if returnMatix:
                feedback.append(label)
             else:             
                 flatLabel = self.flatFeedback(label)
-                #self.printCoordsArray(flatLabel) # printing 1D labels for each directions
+                #printCoordsArray(flatLabel) # printing 1D labels for each directions
                 feedback.append(flatLabel)
 
         return feedback
@@ -238,8 +213,8 @@ class Field(Model):
         for i in range(len(states)): # calculating feedback for each state
             label = [[0 for i in range(vr+1)] for j in range(vr+1)]
             state = states[i]
-            #self.printCoordsArray(state, 0) #printing food amount on cells
-            #self.printCoordsArray(state, 1, True) # printing agents location
+            #printCoordsArray(state, 0) #printing food amount on cells
+            #printCoordsArray(state, 1, True) # printing agents location
 
             # calculating the feedback for each direction where the agend can go
             for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
@@ -264,9 +239,9 @@ class Field(Model):
 
                             
                     label[dx-1][dy-1] = lbl
-            #self.printCoordsArray(label) # printing 2D labels for each directions
+            #printCoordsArray(label) # printing 2D labels for each directions
             flatLabel = self.flatFeedback(label)
-            #self.printCoordsArray(flatLabel) # printing 1D labels for each directions
+            #printCoordsArray(flatLabel) # printing 1D labels for each directions
             feedback.append(flatLabel)
 
         return feedback
