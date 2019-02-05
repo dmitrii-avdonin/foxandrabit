@@ -10,9 +10,38 @@ from utils.Utils import toNpArray, printCoordsArray
 from Trainer import train
 from Trainer import predict
 from mesa.time import RandomActivation
-from mesa.space import SingleGrid
+from mesa.space import MultiGrid
 from utils.VisualizeAgentEnvironment import visualizeAgentEnvironment
 
+class MyMultiGrid(MultiGrid):
+    def __init__(self, width, height, torus):
+        MultiGrid.__init__(self, width, height, torus)
+
+    def getFirstAgentOfTypeIfExist(self, x, y, agentType):
+        cellAgentsSet = self.grid[x][y]
+        agentsOfType = [a for a in cellAgentsSet if a.agentType == agentType]
+        if(len(agentsOfType)==0):
+            return None
+        return agentsOfType[0]
+
+    def getAgentsCountOnCell(self, x, y, agentType):
+        cellAgentsSet = self.grid[x][y]
+        counter = 0
+        for agent in cellAgentsSet:
+            if agent.agentType == agentType:
+                counter+=1
+        return counter
+
+
+    def position_agent(self, agent, x="random", y="random"):
+        if x == "random" or y == "random":
+            if len(self.empties) == 0:
+                raise Exception("ERROR: Grid full")
+            coords = agent.random.choice(self.empties)
+        else:
+            coords = (x, y)
+        agent.pos = coords
+        self._place_agent(coords, agent)        
 
 class Field(Model):
     def __init__(self, width, height, num_rabits, num_foxes, viewRadius, mode):
@@ -28,7 +57,7 @@ class Field(Model):
 
         self.cells = [[FieldCell() for i in range(self.height)] for j in range(self.width)]
 
-        self.grid = SingleGrid(width, height, False)
+        self.grid = MyMultiGrid(width, height, False)
         self.scheduleRabit = RandomActivation(self)
         self.scheduleFox = RandomActivation(self)
 
@@ -36,6 +65,7 @@ class Field(Model):
         self.rabits = []
         for i in range(self.num_rabits):
             a = Rabit(i, self)
+            a.random.choices
             self.grid.position_agent(a, x="random", y="random")
             self.scheduleRabit.add(a)
             self.rabits.append(a)
@@ -62,7 +92,7 @@ class Field(Model):
             nbh = self.get_neighborhood(a.pos)
             vr = self.viewRadius
 
-            agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 +1)]
+            agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)]
             for i in range(vr*2+1):
                 for j in range(vr*2+1):
                     (x,y) = nbh[i][j]
@@ -70,11 +100,16 @@ class Field(Model):
                         agentState[i][j] = [-1, -1, a.fullness]
                     else:
                         food = self.cells[x][y].food
-                        agent = self.grid[x][y]
-                        agentType = 0 if agent==None else agent.agentType
-                        agentState[i][j] = [food, agentType, a.fullness]
+                        food = round(food, 1) #rounding to one decimal place
+                        rabitsCount = self.grid.getAgentsCountOnCell(x, y, AgentType.Rabit)
+                        foxesCount = self.grid.getAgentsCountOnCell(x, y, AgentType.Fox)
+                        agentState[i][j] = [food, rabitsCount, foxesCount]
+            
+            for j in range(vr*2+1):
+                agentState[vr*2 + 1][j] = [0, 0, 0]
+            agentState[vr*2 + 1][0] = [a.fullness, 0, 0]
+            #printCoordsArray(agentState)
             states.append(agentState)
-
         return states
 
     # vr - viewRadius
@@ -90,26 +125,6 @@ class Field(Model):
 
         return coords
 
-    def get_Lables(self, agentList):
-        allLabels = []
-        stepSize = 1  #how far can the agent move on both x and y coords
-        for a in agentList:
-            r1 = self.get_neighborhood(a.pos, stepSize) # coords of all cells where the agent can move
-            
-            size = len(r1) * len(r1[0]) # the number of positions where the agent can move including staying where it is
-            agentLables = [0] * size
-            
-            for i in range(stepSize*2 +1):
-                for j in range(stepSize*2 +1):
-                    direction = a.posToDirection(r1[i][j]) # the direction coresponding to given position
-                    a.calcFeedback(r1[i][j])
-                    agentLables[direction] = a.feedback
-            
-            allLabels.append(agentLables)
-        
-        return np.array(allLabels, dtype=np.float32) 
-
-
 
     def setNextPos(self, agentsList, shifts):
         for i in range(len(agentsList)):
@@ -118,7 +133,7 @@ class Field(Model):
     def clearAgentsInFiledCells(self):
         for j in range(self.width):
             for i in range(self.height):
-                self.cells[j][i].Rabit = None 
+                self.cells[j][i].rabitsCount = 0
 
     def increaseFoodInFiledCells(self):
         for j in range(self.width):
@@ -173,18 +188,18 @@ class Field(Model):
                         for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
                             cell = state[cx][cy]
                             if(cx==dx and cy==dy): #this is the direction cel
-                                if(cell[1]==AgentType.Fox):
+                                if(cell[2] > 0 ): # number of AgentType.Fox on this cell
                                     lbl += -4
 
-                                if((cx!=vr or cy!=vr) and cell[1]==AgentType.Rabit): # first condition to avoid that the agent (whose state we analize) adds a minus to his current location
-                                    lbl += -1
+                                if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
+                                    lbl += -0.4 * cell[1]
 
                                 if(cell[1]==-1):  # a wall, cannot go there
                                     lbl += -2
                                 else:
                                     lbl += cell[0]
                             else:
-                                if(cell[1]==AgentType.Fox):
+                                if(cell[2]>0):
                                     lbl -= 2
                                 if(cell[1]==-1):  # a wall, cannot go there
                                     lbl += -1
@@ -224,16 +239,15 @@ class Field(Model):
                         for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
                             cell = state[cx][cy]
                             if(cx==dx and cy==dy): #this is the direction cel
-                                if(cell[1]==AgentType.Rabit):
-                                    lbl += 2
+                                
+                                lbl += 2 * cell[1] # bonus multiplied by number of rabits on that cell
 
-                                if((cx!=vr or cy!=vr) and cell[1]==AgentType.Fox): # first condition to avoid that the agent (whose state we analize) adds a minus to his current location
-                                    lbl += -1
+                                if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
+                                    lbl += -0.2 * cell[2]
                                 if(cell[1]==-1):  # a wall, cannot go there
                                     lbl += -1
                             else:
-                                if(cell[1]==AgentType.Rabit):
-                                    lbl += 1
+                                lbl += 1 * cell[1]
                                 if(cell[1]==-1):  # a wall, cannot go there
                                     lbl += -0.5                                    
 
@@ -280,7 +294,6 @@ class Field(Model):
 
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration:  # get labels for rabits
                 labels = self.getLablesR(data)
-                #labelR = self.get_Lables(self.rabits)
             
             if self.mode==Mode.Visualization:
                 self.describeSituation(data, rabitMoves)
@@ -298,7 +311,6 @@ class Field(Model):
 
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration: # get labels for foxes
                 labels = self.getLablesF(data)
-                #labelF = self.get_Lables(self.foxes)
             
             self.setNextPos(self.foxes, foxMoves)        
             self.scheduleFox.step()

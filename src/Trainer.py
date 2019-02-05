@@ -21,7 +21,8 @@ def cnn_model_fn(features, labels, mode):
     """Model function for CNN."""
     # Input Layer
     # Reshape X to 4-D tensor: [batch_size, binarPositions, labels]
-    input_layer = tf.reshape(features["x"], [-1, 5, 5, 3])
+    #input_layer = tf.reshape(features["x"], [-1, 6, 5, 3])
+    input_layer = tf.slice(features["x"], [0, 0, 0, 0], [-1, 5, 5, 3])
     #input_layer = tf.cast(input_layer, tf.float32)
     #if(labels != None):
     #    labels = tf.cast(labels, tf.float32)

@@ -2,8 +2,9 @@ from numpy.random import randint
 
 class FieldCell:
     MaxFood = 0.9
+    inc = 0.3
     def __init__(self):
-        self.Rabit = None
+        self.rabitsCount = None
         self.foodExists = False
         self.food = 0.
         if randint(10) < 2:
@@ -19,9 +20,6 @@ class FieldCell:
         if not self.foodExists:
             return
 
-        if(self.Rabit == None):
-            self.food += 0.3
-        else:
-            self.food += 0.
+        self.food += 0.3 - max(FieldCell.inc, 0.1 * self.rabitsCount)
 
-        self.food = self.food if self.food<FieldCell.MaxFood else FieldCell.MaxFood
+        self.food = min(FieldCell.MaxFood, self.food)

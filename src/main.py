@@ -15,7 +15,8 @@ Actions = {
     "trainModels" : startTraining,
     "trainFromFile" : trainFromFile,
     "visualize" : visualize,
-    "generateData": generateTrainingDataSet 
+    "generateData": generateTrainingDataSet,
+    "initializeModels" : initModels
 }
     
 

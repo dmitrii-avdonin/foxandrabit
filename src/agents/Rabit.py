@@ -29,17 +29,18 @@ class Rabit(BaseAgent):
             return
         
         (x, y) = posToGo
-        if not self.model.grid.is_cell_empty(posToGo):            
-            agentOnNextPos = self.model.grid.grid[x][y]
-            if(agentOnNextPos.agentType == self.agentType):
-                self.eatGrassOnCurrentFiledCellAndEvaluateFullness()
-            else:
+        if not self.model.grid.is_cell_empty(posToGo):
+            fox = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Fox)
+            if(fox != None):
                 self.setDead()
                 # we do not increase here the fox fullness because this increase is not determinde by fox decision
-            return
+                return
         
+        self.eatGrassOnCurrentFiledCellAndEvaluateFullness()
+        if(self.isDead):
+            return
         self.model.grid.move_agent(self, posToGo)
-        self.model.cells[x][y].Rabit = self
+        self.model.cells[x][y].rabitsCount += 1
         self.eatGrassOnCurrentFiledCellAndEvaluateFullness()
 
         return

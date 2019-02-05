@@ -1,4 +1,4 @@
-from utils.Utils import toNpArray, saveNpArrayToFile
+from utils.Utils import toNpArray, saveNpArrayToFile, printCoordsArray
 from settings import AgentType, Mode, vr
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
 from field.Field import Field
@@ -29,7 +29,7 @@ def generateTrainingDataSet():
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>200000):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>5000):
             break
 
         if(len(field.rabits)<countR/4 or len(field.foxes)<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  

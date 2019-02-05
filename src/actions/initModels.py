@@ -1,8 +1,9 @@
 from field.Field import Field
 from numpy.random import randint
 import numpy as np
-from settings import fieldW, fieldH, FoxN, RabitN, vr
+from settings import fieldW, fieldH, FoxN, RabitN, vr, Mode
 from Trainer import train
+from utils.Utils import toNpArray
 
 
 def generateDummyLabels(populationSize):
@@ -17,12 +18,12 @@ def generateDummyLabels(populationSize):
     return npLabels
 
 def initModels():
-    field = Field(fieldW, fieldH, RabitN, FoxN, vr)
+    field = Field(fieldW, fieldH, RabitN, FoxN, vr, Mode.Initialization)
 
-    dataR = field.getStatesR()
+    dataR = toNpArray(field.getStatesR())
     labelR = generateDummyLabels(RabitN)
 
-    dataF = field.getStatesF()
+    dataF = toNpArray(field.getStatesF())
     labelF = generateDummyLabels(FoxN)
 
     train(dataR, labelR, True, True)

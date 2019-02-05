@@ -23,6 +23,7 @@ class AgentType:
     Rabit = 2
 
 class Mode:
+    Initialization = -1
     Training = 0
     Visualization = 1
     DataGeneration = 2    

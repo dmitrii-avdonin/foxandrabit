@@ -22,15 +22,12 @@ class Fox(BaseAgent):
 
         if not self.model.grid.is_cell_empty(self.nextPos) :
             (x, y) = self.nextPos
-            agentOnNextPos = self.model.grid.grid[x][y]
-            if(agentOnNextPos.agentType == self.agentType):
-                self.applyHungerAndEvaluateFullness()
-                return
-            else:
+            rabit = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Rabit)
+            if(rabit != None):
                 self.fullness += Fox.EatARabit
-                agentOnNextPos.setDead()
-        else:
-            self.applyHungerAndEvaluateFullness()
+                rabit.setDead()
+
+        self.applyHungerAndEvaluateFullness()
 
         if(not self.isDead):
             self.model.grid.move_agent(self, self.nextPos)
