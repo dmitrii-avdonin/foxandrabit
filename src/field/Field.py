@@ -11,6 +11,7 @@ from Trainer import train
 from Trainer import predict
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+from mesa.datacollection import DataCollector
 from utils.VisualizeAgentEnvironment import visualizeAgentEnvironment
 
 class MyMultiGrid(MultiGrid):
@@ -61,6 +62,9 @@ class Field(Model):
         self.scheduleRabit = RandomActivation(self)
         self.scheduleFox = RandomActivation(self)
 
+        self.datacollector = DataCollector(
+        model_reporters={"RabitsNr": lambda model : len(model.rabits), "FoxesNr": lambda model : len(model.foxes)},  # A function to call
+        agent_reporters={})  # An agent attribute
 
         self.rabits = []
         for i in range(self.num_rabits):
@@ -157,10 +161,11 @@ class Field(Model):
         label = self.getLablesR(data, True)
         #visualizeAgentEnvironment(data[0])
         for i in range(len(label)):            
-            x= direction[i] % 3
-            y= direction[i] // 3 
+            x= direction[i] % (self.viewRadius + 1)
+            y= direction[i] // (self.viewRadius + 1)
             if(label[i][x][y]<0):
                 printCoordsArray(data[i], 1, True) # printing agents location
+                printCoordsArray(data[i], 0, False) # printing food location
                 printCoordsArray(label[i]) # printing 2D labels for each directions
                 print("predicted direction: " + str(direction[i] + 1))
                 print("===================================================")        
@@ -304,6 +309,8 @@ class Field(Model):
 
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), True, False)        #train rabits
+
+            self.datacollector.collect(self)
         else:
             agentType = AgentType.Fox
             data = self.getStatesF()
@@ -322,6 +329,8 @@ class Field(Model):
 
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), False, False)       #train foxes
+
+            self.datacollector.collect(self)
 
         self.rabitsMove = not self.rabitsMove
         return (agentType, data, labels) 
