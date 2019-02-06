@@ -20,6 +20,6 @@ class FieldCell:
         if not self.foodExists:
             return
 
-        self.food += 0.3 - max(FieldCell.inc, 0.1 * self.rabitsCount)
+        self.food += max(0, FieldCell.inc - 0.1 * self.rabitsCount)
 
         self.food = min(FieldCell.MaxFood, self.food)
