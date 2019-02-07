@@ -17,7 +17,7 @@ def generateDummyLabels(populationSize):
     npLabels = np.array(labels, dtype=np.float32)
     return npLabels
 
-def initModels():
+def initModels(args):
     field = Field(fieldW, fieldH, RabitN, FoxN, vr, Mode.Initialization)
 
     dataR = toNpArray(field.getStatesR())

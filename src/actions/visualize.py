@@ -5,7 +5,7 @@ from mesa.visualization.modules import ChartModule
 from field.Field import Field
 
 
-def visualize():
+def visualize(args):
     ppdw = 8 #pixels per dimension
     ppdh = 11 #pixels per dimension
     grid = MyCanvasGrid(rabit_portrayal, fox_portrayal, terain_portrayal, fieldW, fieldW, fieldW * ppdw, fieldH * ppdh)

@@ -26,4 +26,4 @@ if __name__ == "__main__":
     if(action == None):
         print("Unknown action: " + actionName)
     else:
-        action()
+        action(sys.argv[2:100])

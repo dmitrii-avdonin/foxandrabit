@@ -5,7 +5,7 @@ from field.Field import Field
 
 
 
-def generateTrainingDataSet():
+def generateTrainingDataSet(args):
     trainDataR = []
     trainLabelsR = []
     trainDataF = []

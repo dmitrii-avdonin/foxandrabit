@@ -102,7 +102,7 @@ def getModelDir(isPrey):
         return "./PredModel"
 
 
-def train( _data, _labels, isPrey, modelInitialization):
+def train( _data, _labels, isPrey, modelInitialization, stepsCount = 100000):
     _90p = len(_data)//100 * 90
 
     trainingD, testD = _data[:_90p,:], _data[_90p:,:]
@@ -131,7 +131,7 @@ def train( _data, _labels, isPrey, modelInitialization):
         shuffle=True)
     mnist_classifier.train(
         input_fn=train_input_fn,
-        steps=300000 if not modelInitialization else 1,
+        steps=stepsCount if not modelInitialization else 1,
         hooks=[logging_hook])
 
     # Evaluate the model and print results

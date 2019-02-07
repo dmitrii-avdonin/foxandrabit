@@ -1,7 +1,7 @@
 from settings import fieldW, fieldH, FoxN, RabitN, vr, Mode
 from field.Field import Field
 
-def startTraining():
+def startTraining(args):
     field = Field(fieldW, fieldH, RabitN, FoxN, vr, Mode.Training)
     runStats = []
     restart = 0
