@@ -14,6 +14,7 @@ class BaseAgent(Agent):
     def setDead(self):
         self.isDead = True
         self.model.grid.remove_agent(self)
+        self.model.getScheduler(self.agentType).remove(self)
 
 
     def setNextPos(self, direction):

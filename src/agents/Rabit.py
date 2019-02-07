@@ -3,10 +3,15 @@ from settings import AgentType
 
 class Rabit(BaseAgent):
     InitialFullness = 5.
-    Hunger = 0.5 # fullness decrease per step
+    Hunger = 0.3 # fullness decrease per step
     MaxEat = 0.6 # max how much can eat one time if it is available on current field cell
+    DeadCount = 0
     def __init__(self, unique_id, model):
         BaseAgent.__init__(self, AgentType.Rabit, unique_id, model, Rabit.InitialFullness)
+
+    def setDead(self):
+        BaseAgent.setDead(self)
+        Rabit.DeadCount += 1
 
     def eatGrassOnCurrentFiledCellAndEvaluateFullness(self):
         (x,y) = self.pos

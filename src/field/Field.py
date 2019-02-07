@@ -62,8 +62,10 @@ class Field(Model):
         self.scheduleRabit = RandomActivation(self)
         self.scheduleFox = RandomActivation(self)
 
+        Rabit.DeadCount = 0
+        Fox.DeadCount = 0
         self.datacollector = DataCollector(
-        model_reporters={"RabitsNr": lambda model : len(model.rabits), "FoxesNr": lambda model : len(model.foxes)},  # A function to call
+        model_reporters={"RabitsNr": lambda model : model.aliveRabitsCount(), "FoxesNr": lambda model : model.aliveFoxesCount()},  # A function to call
         agent_reporters={})  # An agent attribute
 
         self.rabits = []
@@ -81,6 +83,11 @@ class Field(Model):
             self.scheduleFox.add(a)
             self.foxes.append(a)
 
+    def aliveRabitsCount(self):
+        return self.num_rabits - Rabit.DeadCount
+
+    def aliveFoxesCount(self):
+        return self.num_foxes - Fox.DeadCount
 
     def getStatesR(self):
         return self.getStates(self.rabits)
@@ -93,25 +100,28 @@ class Field(Model):
     def getStates(self, agentList):
         states = []
         for a in agentList:
-            nbh = self.get_neighborhood(a.pos)
             vr = self.viewRadius
-
-            agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)]
-            for i in range(vr*2+1):
-                for j in range(vr*2+1):
-                    (x,y) = nbh[i][j]
-                    if self.grid.out_of_bounds((x, y)):  #this cell can't be reached 
-                        agentState[i][j] = [-1, -1, a.fullness]
-                    else:
-                        food = self.cells[x][y].food
-                        food = round(food, 1) #rounding to one decimal place
-                        rabitsCount = self.grid.getAgentsCountOnCell(x, y, AgentType.Rabit)
-                        foxesCount = self.grid.getAgentsCountOnCell(x, y, AgentType.Fox)
-                        agentState[i][j] = [food, rabitsCount, foxesCount]
-            
+            if(not a.isDead):
+                nbh = self.get_neighborhood(a.pos)
+                agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)]
+                for i in range(vr*2+1):
+                    for j in range(vr*2+1):
+                        (x,y) = nbh[i][j]
+                        if self.grid.out_of_bounds((x, y)):  #this cell can't be reached 
+                            agentState[i][j] = [-1, -1, a.fullness]
+                        else:
+                            food = self.cells[x][y].food
+                            food = round(food, 1) #rounding to one decimal place
+                            rabitsCount = self.grid.getAgentsCountOnCell(x, y, AgentType.Rabit)
+                            foxesCount = self.grid.getAgentsCountOnCell(x, y, AgentType.Fox)
+                            agentState[i][j] = [food, rabitsCount, foxesCount]
+            else:
+                agentState = [[ [0, 0, 0] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)] 
             for j in range(vr*2+1):
                 agentState[vr*2 + 1][j] = [0, 0, 0]
-            agentState[vr*2 + 1][0] = [a.fullness, 0, 0]
+            if(not a.isDead):
+                agentState[vr*2 + 1][0] = [a.fullness, 0, 0]
+
             #printCoordsArray(agentState)
             states.append(agentState)
         return states
@@ -132,7 +142,8 @@ class Field(Model):
 
     def setNextPos(self, agentsList, shifts):
         for i in range(len(agentsList)):
-            agentsList[i].setNextPos(shifts[i])
+            if(not agentsList[i].isDead):
+                agentsList[i].setNextPos(shifts[i])
 
     def clearAgentsInFiledCells(self):
         for j in range(self.width):
@@ -144,18 +155,14 @@ class Field(Model):
             for i in range(self.height):
                 self.cells[j][i].incFood() 
 
-    def removeDead(self, agentList, scheduler):
-        dead = [x for x in agentList if x.isDead]
-        for a in dead:
-            scheduler.remove(a)
-            agentList.remove(a)
+    def getScheduler(self, agentType):
+        if(agentType == AgentType.Rabit):
+            return self.scheduleRabit
+        if(agentType == AgentType.Fox):
+            return self.scheduleFox
+        raise Exception("Unknown agent type")
+        
 
-    def removeDeadRabits(self):
-        self.removeDead(self.rabits, self.scheduleRabit)                
-            
-
-    def removeDeadFoxes(self):
-        self.removeDead(self.foxes, self.scheduleFox)
 
     def describeSituation(self, data, direction):
         label = self.getLablesR(data, True)
@@ -185,34 +192,35 @@ class Field(Model):
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
 
-            # calculating the feedback for each direction where the agend can go
-            for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
-                for dy in self.getShift(vr, mr): # samve for y coordinate  
-                    lbl = 0.0          
-                    for cx in self.getShift(dx, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
-                        for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
-                            cell = state[cx][cy]
-                            if(cx==dx and cy==dy): #this is the direction cel
-                                if(cell[2] > 0 ): # number of AgentType.Fox on this cell
-                                    lbl += -4
+            if(not self.rabits[i].isDead):
+                # calculating the feedback for each direction where the agend can go
+                for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
+                    for dy in self.getShift(vr, mr): # samve for y coordinate  
+                        lbl = 0.0          
+                        for cx in self.getShift(dx, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                            for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                                cell = state[cx][cy]
+                                if(cx==dx and cy==dy): #this is the direction cel
+                                    if(cell[2] > 0 ): # number of AgentType.Fox on this cell
+                                        lbl += -4
 
-                                if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
-                                    lbl += -0.4 * cell[1]
+                                    if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
+                                        lbl += -0.4 * cell[1]
 
-                                if(cell[1]==-1):  # a wall, cannot go there
-                                    lbl += -2
+                                    if(cell[1]==-1):  # a wall, cannot go there
+                                        lbl += -2
+                                    else:
+                                        lbl += cell[0]
                                 else:
-                                    lbl += cell[0]
-                            else:
-                                if(cell[2]>0):
-                                    lbl -= 2
-                                if(cell[1]==-1):  # a wall, cannot go there
-                                    lbl += -1
-                                else:
-                                    lbl += cell[0] * 0.1
+                                    if(cell[2]>0):
+                                        lbl -= 2
+                                    if(cell[1]==-1):  # a wall, cannot go there
+                                        lbl += -1
+                                    else:
+                                        lbl += cell[0] * 0.1
+                                
+                        label[dx-1][dy-1] = lbl
 
-                            
-                    label[dx-1][dy-1] = lbl
             #printCoordsArray(label) # printing 2D labels for each directions
             if returnMatix:
                feedback.append(label)
@@ -236,28 +244,29 @@ class Field(Model):
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
 
-            # calculating the feedback for each direction where the agend can go
-            for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
-                for dy in self.getShift(vr, mr): # samve for y coordinate  
-                    lbl = 0.0          
-                    for cx in self.getShift(dx, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
-                        for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
-                            cell = state[cx][cy]
-                            if(cx==dx and cy==dy): #this is the direction cel
+            if(not self.rabits[i].isDead):
+                # calculating the feedback for each direction where the agend can go
+                for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
+                    for dy in self.getShift(vr, mr): # samve for y coordinate  
+                        lbl = 0.0          
+                        for cx in self.getShift(dx, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                            for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
+                                cell = state[cx][cy]
+                                if(cx==dx and cy==dy): #this is the direction cel
+                                    
+                                    lbl += 2 * cell[1] # bonus multiplied by number of rabits on that cell
+
+                                    if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
+                                        lbl += -0.2 * cell[2]
+                                    if(cell[1]==-1):  # a wall, cannot go there
+                                        lbl += -1
+                                else:
+                                    lbl += 1 * cell[1]
+                                    if(cell[1]==-1):  # a wall, cannot go there
+                                        lbl += -0.5                                    
                                 
-                                lbl += 2 * cell[1] # bonus multiplied by number of rabits on that cell
+                        label[dx-1][dy-1] = lbl
 
-                                if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
-                                    lbl += -0.2 * cell[2]
-                                if(cell[1]==-1):  # a wall, cannot go there
-                                    lbl += -1
-                            else:
-                                lbl += 1 * cell[1]
-                                if(cell[1]==-1):  # a wall, cannot go there
-                                    lbl += -0.5                                    
-
-                            
-                    label[dx-1][dy-1] = lbl
             #printCoordsArray(label) # printing 2D labels for each directions
             flatLabel = self.flatFeedback(label)
             #printCoordsArray(flatLabel) # printing 1D labels for each directions
@@ -279,10 +288,10 @@ class Field(Model):
 
 
     def step(self):
-        print("RCount " + str(len(self.rabits)) )
-        print("FCount " + str(len(self.foxes)) )
+        print("RCount " + str(self.aliveRabitsCount()) )
+        print("FCount " + str(self.aliveFoxesCount()) )
 
-        if(len(self.rabits)==0 or len(self.foxes)==0):
+        if(self.aliveRabitsCount()==0 or self.aliveFoxesCount()==0):
             self.running = False
             return
         
@@ -305,7 +314,6 @@ class Field(Model):
 
             self.setNextPos(self.rabits, rabitMoves)        
             self.scheduleRabit.step()
-            self.removeDeadRabits() # removing rabits that have died of starvation or commited suicide
 
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), True, False)        #train rabits
@@ -321,9 +329,6 @@ class Field(Model):
             
             self.setNextPos(self.foxes, foxMoves)        
             self.scheduleFox.step()
-
-            self.removeDeadRabits()
-            self.removeDeadFoxes()
 
             self.increaseFoodInFiledCells() # grass is growing in cells
 

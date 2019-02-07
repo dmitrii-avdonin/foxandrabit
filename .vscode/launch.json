@@ -43,6 +43,14 @@
             "program": "${workspaceFolder}/src/main.py",
             "args": ["initializeModels"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Reinforcement",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": ["reinforcement"],
+            "console": "integratedTerminal"
         }
     ]
 }

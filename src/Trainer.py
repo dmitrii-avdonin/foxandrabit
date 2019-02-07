@@ -54,12 +54,13 @@ def cnn_model_fn(features, labels, mode):
     pool1_flat = tf.reshape(pool2, [-1, 1* 1 * 16])
 
     # Dense Layer Densely connected layer
-    dense = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
+    dense1 = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
+    dense2 = tf.layers.dense(inputs=dense1, units=1024, activation=tf.nn.relu)
 
     
 
     # Logits layer
-    logits = tf.layers.dense(inputs=dense, units=9)
+    logits = tf.layers.dense(inputs=dense2, units=9)
 
     predictions = {
         # Generate predictions (for PREDICT and EVAL mode)
@@ -130,7 +131,7 @@ def train( _data, _labels, isPrey, modelInitialization):
         shuffle=True)
     mnist_classifier.train(
         input_fn=train_input_fn,
-        steps=100000 if not modelInitialization else 1,
+        steps=300000 if not modelInitialization else 1,
         hooks=[logging_hook])
 
     # Evaluate the model and print results

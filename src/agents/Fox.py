@@ -5,9 +5,13 @@ class Fox(BaseAgent):
     InitialFullness = 2.
     Hunger = 0.2
     EatARabit = 1.  # if eats a rabit its fullness will be increased by this amount
+    DeadCount = 0
     def __init__(self, unique_id, model):
         BaseAgent.__init__(self, AgentType.Fox, unique_id, model, Fox.InitialFullness)
 
+    def setDead(self):
+        BaseAgent.setDead(self)
+        Fox.DeadCount += 1
 
     def makeStep(self, posToGo):
         self.fullness = self.fullness
