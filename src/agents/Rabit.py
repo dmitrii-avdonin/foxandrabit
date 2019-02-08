@@ -1,5 +1,5 @@
 from .baseAgent import BaseAgent
-from settings import AgentType
+from settings import AgentType, vr
 
 class Rabit(BaseAgent):
     InitialFullness = 5.
@@ -8,18 +8,34 @@ class Rabit(BaseAgent):
     DeadCount = 0
     def __init__(self, unique_id, model):
         BaseAgent.__init__(self, AgentType.Rabit, unique_id, model, Rabit.InitialFullness)
+        self.dayCounter = 1
+        self.fullness5 = self.fullness
 
     def setDead(self):
         BaseAgent.setDead(self)
         Rabit.DeadCount += 1
+
+    def evaluateFeedEfeciency(self):
+        if(self.dayCounter==vr):            
+            self.feedback = self.fullness - self.fullness5
+            self.dayCounter = 1
+            self.fullness5 = self.fullness
+        else:
+            self.dayCounter += 1
+
 
     def eatGrassOnCurrentFiledCellAndEvaluateFullness(self):
         (x,y) = self.pos
         actualEat = self.model.cells[x][y].removeFood(Rabit.MaxEat)
         self.fullness += actualEat
         self.fullness -= Rabit.Hunger
+        
+        if(self.fullness > 0):
+            self.evaluateFeedEfeciency()
+
         if(self.fullness <= 0):
             self.setDead()
+            self.feedback = -1
 
     # posToGo - next position to go
     def makeStep(self, posToGo):
@@ -38,6 +54,7 @@ class Rabit(BaseAgent):
             fox = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Fox)
             if(fox != None):
                 self.setDead()
+                self.feedback = -1
                 # we do not increase here the fox fullness because this increase is not determinde by fox decision
                 return
         

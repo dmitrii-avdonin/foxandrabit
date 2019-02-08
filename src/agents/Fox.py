@@ -29,7 +29,9 @@ class Fox(BaseAgent):
             rabit = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Rabit)
             if(rabit != None):
                 self.fullness += Fox.EatARabit
+                self.feedback = 1
                 rabit.setDead()
+                rabit.feedback = -1
 
         self.applyHungerAndEvaluateFullness()
 
@@ -42,7 +44,8 @@ class Fox(BaseAgent):
     def applyHungerAndEvaluateFullness(self):
         self.fullness -= Fox.Hunger
         if(self.fullness <= 0):
-            self.setDead()    
+            self.setDead()
+            self.feedback = -1
 
 
     def step(self):

@@ -5,7 +5,10 @@ from field.Field import Field
 
 
 
-def generateTrainingDataSet(args):
+def reinforcement(args):
+
+    targetStepsCount = int(args[0])
+
     trainDataR = []
     trainLabelsR = []
     trainDataF = []
@@ -17,24 +20,46 @@ def generateTrainingDataSet(args):
     countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
     field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
 
-    while True:    
-        agent, data, label = field.step()
-        trainData = trainDataR if agent==AgentType.Rabit else trainDataF
-        trainLabels = trainLabelsR if agent==AgentType.Rabit else trainLabelsF
+    dataQueueR = []
+    labelQueueR = [] 
+    dataQueueF = []
+    labelQueueF = [] 
 
-        c=0
-        for i in range(len(data)):
-            if data[i] not in trainData:
-                trainData.append(data[i])
-                trainLabels.append(label[i])
-            else:
-                c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>10000):
-            break
+    stepsCount = 0
+    while stepsCount < targetStepsCount:
+        agent, data, label, agentsFeedback = field.step()
 
-        if(len(field.rabits)<countR/4 or len(field.foxes)<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
+        if(agent == AgentType.Rabit):
+            dataQueue = dataQueueR
+            labelQueue = labelQueueR
+            trainData = trainDataR
+            trainLabels = trainLabelsR
+        else:
+            dataQueue = dataQueueF
+            labelQueue = labelQueueF
+            trainData = trainDataF
+            trainLabels = trainLabelsF
+
+
+        dataQueue.append(data)
+        labelQueue.append(label)
+
+
+        if(len(dataQueue)>=vr):
+            oldestData = dataQueue.pop(0)
+            oldestLabel = labelQueue.pop(0)
+            for i in range(len(oldestData)):
+                if oldestData[i] not in trainData:
+                    trainData.append(oldestData[i])
+                    trainLabels.append(oldestLabel[i])
+                else:
+                    trainLabels[i] = oldestLabel[i]
+
+        if(field.aliveRabitsCount<countR/4 or field.aliveFoxesCount<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
             field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
 
+        stepsCount += 1
+#====================================================================================================
         
     trainDataR = toNpArray(trainDataR)
     trainLabelsR = toNpArray(trainLabelsR)

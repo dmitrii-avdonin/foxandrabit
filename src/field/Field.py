@@ -286,6 +286,12 @@ class Field(Model):
                 result[fbWidth*y + x] = fb[x][y]
         return result
 
+    def getAgentsReinforcementFeedback(self, agentsList):
+        result = []
+        for a in agentsList:
+            result.append(a.feedback)
+        return result
+
 
     def step(self):
         print("RCount " + str(self.aliveRabitsCount()) )
@@ -297,6 +303,7 @@ class Field(Model):
         
         labels = None
         data = None
+        agentsFeedback = None
         agentType = -1
 
         if self.rabitsMove:
@@ -318,6 +325,9 @@ class Field(Model):
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), True, False)        #train rabits
 
+            if self.mode==Mode.Reinforcement:
+                agentsFeedback = self.getAgentsReinforcementFeedback(self.rabits)
+
             self.datacollector.collect(self)
         else:
             agentType = AgentType.Fox
@@ -335,7 +345,10 @@ class Field(Model):
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), False, False)       #train foxes
 
+            if self.mode==Mode.Reinforcement:
+                agentsFeedback = self.getAgentsReinforcementFeedback(self.foxes)
+
             self.datacollector.collect(self)
 
         self.rabitsMove = not self.rabitsMove
-        return (agentType, data, labels) 
+        return (agentType, data, labels, agentsFeedback)

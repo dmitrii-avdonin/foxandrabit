@@ -9,6 +9,7 @@ class BaseAgent(Agent):
         self.nextPos = (0, 0)
         self.pos = (0, 0)
         self.isDead = False
+        self.feedback = 0
 
 
     def setDead(self):

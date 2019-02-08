@@ -26,4 +26,5 @@ class Mode:
     Initialization = -1
     Training = 0
     Visualization = 1
-    DataGeneration = 2    
+    DataGeneration = 2
+    Reinforcement = 3

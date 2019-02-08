@@ -4,6 +4,7 @@ from actions.initModels import initModels
 from actions.startTraining import startTraining
 from actions.visualize import visualize
 from actions.trainFromFile import trainFromFile
+from actions.reinforcement import reinforcement
 
 
 
@@ -16,7 +17,8 @@ Actions = {
     "trainFromFile" : trainFromFile,
     "visualize" : visualize,
     "generateData": generateTrainingDataSet,
-    "initializeModels" : initModels
+    "initializeModels" : initModels,
+    "reinforcement": reinforcement
 }
     
 
