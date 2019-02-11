@@ -21,13 +21,29 @@ class MyBST(BST):
 
         return self.__insert(self.root, TaggedNode(value, tag))        
 
+    def search(self, value):
+        if self.root is None:
+            return None
+
+        return self.__search(self.root, value)
+
+    def __search(self, node, value):
+        if node is None:
+            return None
+
+        if value.tolist() == node.value.tolist():
+            return node
+        elif value.tolist() < node.value.tolist():
+            return self.__search(node.left, value)
+        else:
+            return self.__search(node.right, value)
 
     def __insert(self, node, newNode):
-        if newNode.value == node.value:
-            #print('duplicates found: ' + str(newNode.tag) + "  " + str(node.tag))
+        if newNode.value.tolist() == node.value.tolist():
+            print('duplicates found: ' + str(newNode.tag) + "  " + str(node.tag))
             self.duplicatesCount += 1
             return None
-        elif newNode.value < node.value:
+        elif newNode.value.tolist() < node.value.tolist():
             if node.left is None:
                 node.left = newNode
                 return node.left

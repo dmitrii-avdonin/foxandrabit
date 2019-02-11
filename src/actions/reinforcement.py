@@ -31,10 +31,10 @@ def reinforcement(args):
     _labelF = loadNpArrayFromFile(pathToLabelF)
 
     # converting to lists
-    trainDataR = _dataR.tolist()
-    trainLabelsR = _labelR.tolist()
-    trainDataF = _dataF.tolist()
-    trainLabelsF = _labelF.tolist()
+    trainDataR = [a for a in _dataR] #.tolist()
+    trainLabelsR = [a for a in _labelR]#.tolist()
+    trainDataF = [a for a in _dataF]#.tolist()
+    trainLabelsF = [a for a in _labelF]#.tolist()
 
     bstR = MyBST()
     bstR.insertList(trainDataR)
@@ -62,14 +62,6 @@ def reinforcement(args):
 
     moveDirsCount = 9 # number of directions where agent can move (or stay insme place)
 
-    dataQueueR = []
-    labelQueueR = [] 
-    dataQueueF = []
-    labelQueueF = []
-    agntMoveDirsArrayR = None
-    agntMoveDirsArrayF = None
-
-
     stores=[
         VarStore(trainDataF, trainLabelsF, mWightF, countF, bstF),
         VarStore(trainDataR, trainLabelsR, mWightR, countR, bstR),
@@ -80,6 +72,8 @@ def reinforcement(args):
     timeList = []
     while stepsCount < targetStepsCount:
         agent, data, label, agentsFeedback, moves = field.step()
+        data = toNpArray(data)
+        label = toNpArray(label)
         store = stores[agent-1]
 
         startTime = time.time()
@@ -111,7 +105,7 @@ def reinforcement(args):
                     if(found is None):
                         store.labelQ[i][j] += labelDirectionDelta[i][j] 
                         store.trainData.append(store.dataQ[i][j])
-                        store.trainLabels.append(store.labelQ[i][j])    
+                        store.trainLabels.append(store.labelQ[i][j])
                         store.bst.insert(store.dataQ[i][j], len(store.trainData)-1)
                     else:
                         store.trainLabels[found.tag] += labelDirectionDelta[i][j] 

@@ -49,7 +49,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
-            "args": ["reinforcement", "10"],
+            "args": ["reinforcement", "25"],
             "console": "integratedTerminal"
         }
     ]

@@ -18,7 +18,7 @@ def generateTrainingDataSet(args):
     field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
 
     while True:    
-        agent, data, label = field.step()
+        agent, data, label, agentsFeedback, moves  = field.step()
         trainData = trainDataR if agent==AgentType.Rabit else trainDataF
         trainLabels = trainLabelsR if agent==AgentType.Rabit else trainLabelsF
 
@@ -29,7 +29,7 @@ def generateTrainingDataSet(args):
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>10000):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>1000):
             break
 
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
