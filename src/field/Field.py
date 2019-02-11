@@ -290,6 +290,7 @@ class Field(Model):
         result = []
         for a in agentsList:
             result.append(a.feedback)
+            a.feedback = 0
         return result
 
 
@@ -311,15 +312,15 @@ class Field(Model):
             self.clearAgentsInFiledCells() # scheduleRabit.step() will initialize the next filedCells with Rabits 
             
             data = self.getStatesR()
-            rabitMoves = predict(toNpArray(data), True)
+            moves = predict(toNpArray(data), True)
 
-            if self.mode==Mode.Training or self.mode==Mode.DataGeneration:  # get labels for rabits
+            if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement:  # get labels for rabits
                 labels = self.getLablesR(data)
             
             if self.mode==Mode.Visualization:
-                self.describeSituation(data, rabitMoves)
+                self.describeSituation(data, moves)
 
-            self.setNextPos(self.rabits, rabitMoves)        
+            self.setNextPos(self.rabits, moves)        
             self.scheduleRabit.step()
 
             if self.mode==Mode.Training:
@@ -332,12 +333,12 @@ class Field(Model):
         else:
             agentType = AgentType.Fox
             data = self.getStatesF()
-            foxMoves = predict(toNpArray(data), False)
+            moves = predict(toNpArray(data), False)
 
-            if self.mode==Mode.Training or self.mode==Mode.DataGeneration: # get labels for foxes
+            if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement: # get labels for foxes
                 labels = self.getLablesF(data)
             
-            self.setNextPos(self.foxes, foxMoves)        
+            self.setNextPos(self.foxes, moves)        
             self.scheduleFox.step()
 
             self.increaseFoodInFiledCells() # grass is growing in cells
@@ -351,4 +352,4 @@ class Field(Model):
             self.datacollector.collect(self)
 
         self.rabitsMove = not self.rabitsMove
-        return (agentType, data, labels, agentsFeedback)
+        return (agentType, data, labels, agentsFeedback, moves)

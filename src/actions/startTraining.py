@@ -8,8 +8,8 @@ def startTraining(args):
     iterationsCount = 0
 
     while True:
-        if(field.aliveRabitsCount<RabitN/2 or field.aliveFoxesCount<FoxN/2): 
-            runStats.append({"restart": restart, "iterationsCount": iterationsCount, "rabitsLeft": field.aliveRabitsCount, "foxesLeft": field.aliveFoxesCount})
+        if(field.aliveRabitsCount()<RabitN/2 or field.aliveFoxesCount()<FoxN/2): 
+            runStats.append({"restart": restart, "iterationsCount": iterationsCount, "rabitsLeft": field.aliveRabitsCount(), "foxesLeft": field.aliveFoxesCount()})
             field = Field(fieldW, fieldH, RabitN, FoxN, vr, Mode.Training)            
             restart += 1
             iterationsCount = 0

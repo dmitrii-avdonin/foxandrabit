@@ -17,7 +17,7 @@ class Rabit(BaseAgent):
 
     def evaluateFeedEfeciency(self):
         if(self.dayCounter==vr):            
-            self.feedback = self.fullness - self.fullness5
+            self.feedback = (self.fullness - self.fullness5)/max(self.fullness, self.fullness5)
             self.dayCounter = 1
             self.fullness5 = self.fullness
         else:
@@ -30,9 +30,6 @@ class Rabit(BaseAgent):
         self.fullness += actualEat
         self.fullness -= Rabit.Hunger
         
-        if(self.fullness > 0):
-            self.evaluateFeedEfeciency()
-
         if(self.fullness <= 0):
             self.setDead()
             self.feedback = -1
@@ -58,12 +55,14 @@ class Rabit(BaseAgent):
                 # we do not increase here the fox fullness because this increase is not determinde by fox decision
                 return
         
-        self.eatGrassOnCurrentFiledCellAndEvaluateFullness()
         if(self.isDead):
             return
         self.model.grid.move_agent(self, posToGo)
         self.model.cells[x][y].rabitsCount += 1
         self.eatGrassOnCurrentFiledCellAndEvaluateFullness()
+        
+        if(not self.isDead):
+            self.evaluateFeedEfeciency()
 
         return
 
