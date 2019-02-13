@@ -7,5 +7,6 @@
         "-v",
         "-s", ".",
         "-p", "*test*.py"
-    ]
+    ],
+    "python.unitTest.cwd": "${workspaceFolder}/src"
 }

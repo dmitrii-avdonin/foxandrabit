@@ -1,32 +1,53 @@
 import unittest
 from mock import patch
+import mock
 # from actions.reinforcement import reinforcement
-# from settings import Mode
-# from field.Field import Field
+from settings import Mode
+from field.Field import Field
+import utils.Utils
+import actions.reinforcement
 
+
+def loadFromFile(fileName):
+    return fileName
 
 class TestStringMethods(unittest.TestCase):
 
-    # def setUp(self):
-    #     self.width = 50
-    #     self.height = 40
-    #     self.countR = 100
-    #     self.countF = 100
-    #     self.vr = 2        
-    #     # with patch('field.Field') as mock:
-    #     #     insnstance = mock.return_value
-    #     #     insnstance.step.return_value  = ("first", "second")
-    #     #     f = Field(self.width, self.height, self.countR, self.countF, self.vr, Mode.Reinforcement)
-    #     #     a, b, c, d, e = f.step()
-    #     #     print("==========================" + str(a))
+    def setUp(self):
+        self.width = 50
+        self.height = 40
+        self.countR = 10
+        self.countF = 10
+        self.vr = 2        
+        # with patch('field.Field') as mock:
+        #     insnstance = mock.return_value
+        #     insnstance.step.return_value  = ("first", "second")
+        #     f = Field(self.width, self.height, self.countR, self.countF, self.vr, Mode.Reinforcement)
+        #     a, b, c, d, e = f.step()
+        #     print("==========================" + str(a))
 
 
-    # @patch('field.Field.Field', autospec='testField')
-    # def test_reinforce(self, fieldMock):
-    #     instance = fieldMock.return_value
-    #     instance.return_value.step = ("a", "b", "c", "d", "e")
-    #     a, b, c, d, e = Field(self.width, self.height, self.countR, self.countF, self.vr, Mode.Reinforcement).step()
-    #     self.assertEqual(a, 'a')
+    @mock.patch('utils.Utils.loadNpArrayFromFile', side_effect=loadFromFile)
+    @mock.patch('actions.reinforcement.loadNpArrayFromFile', side_effect=loadFromFile)
+    def test_mockModuleFunction(self, mock_load, mock_loadInReinf):
+        self.assertEqual(utils.Utils.loadNpArrayFromFile("asdf"), 'asdf')
+        actions.reinforcement.reinforcement([3])
+
+    @patch.object(Field, 'step', return_value = ("a", "b", "c", "d", "e"))
+    @patch.object(Field, 'aliveRabitsCount', return_value = 555)
+    def test_patchMultipleMethods(self, mock_step, mock_aliveRabitsCount):
+        f = Field(self.width, self.height, self.countR, self.countF, self.vr, Mode.Reinforcement)
+        a, b, c, d, e = f.step()
+        count = f.aliveRabitsCount()
+        self.assertEqual(a, 'a')
+        self.assertEqual(count, 555)
+
+
+    @patch.object(Field, 'step')
+    def test_patchOneMethod(self, stepMock):
+        stepMock.return_value = ("a", "b", "c", "d", "e")
+        a, b, c, d, e = Field(self.width, self.height, self.countR, self.countF, self.vr, Mode.Reinforcement).step()
+        self.assertEqual(a, 'a')
 
     def test_upper(self):
         print("I'm here")
