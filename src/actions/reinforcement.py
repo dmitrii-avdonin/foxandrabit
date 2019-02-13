@@ -20,9 +20,32 @@ class VarStore:
         self.agentsCount = count
         self.bst = bst
 
+def parseArgs(args):    
+    targetStepsCount = 10
+    width = 150
+    height = 150
+    countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
+    countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
+
+    argsCount = len(args)
+    if(argsCount>0):
+        targetStepsCount = args[0]
+
+    if(argsCount>=3):
+        width = args[1]
+        height = args[2]
+
+    if(argsCount>=5):
+        countR = args[3]
+        countF = args[4]
+    
+    return (targetStepsCount, width, height, countR, countF)
+
+
+
 def reinforcement(args):
 
-    targetStepsCount = int(args[0])
+    targetStepsCount, width, height, countR, countF = parseArgs(args)
 
     # loading existing training data from files
     _dataR = loadNpArrayFromFile(pathToDataR)
@@ -31,10 +54,10 @@ def reinforcement(args):
     _labelF = loadNpArrayFromFile(pathToLabelF)
 
     # converting to lists
-    trainDataR = [a for a in _dataR] #.tolist()
-    trainLabelsR = [a for a in _labelR]#.tolist()
-    trainDataF = [a for a in _dataF]#.tolist()
-    trainLabelsF = [a for a in _labelF]#.tolist()
+    trainDataR = [a for a in _dataR]
+    trainLabelsR = [a for a in _labelR]
+    trainDataF = [a for a in _dataF]
+    trainLabelsF = [a for a in _labelF]
 
     bstR = MyBST()
     bstR.insertList(trainDataR)
@@ -42,10 +65,6 @@ def reinforcement(args):
     bstF = MyBST()
     bstF.insertList(trainDataF)
 
-    width = 150
-    height = 150
-    countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
-    countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
     field = Field(width, height, countR, countF, vr, Mode.Reinforcement)
 
     decrees = 1.2   # the rate increment is decreasing if we go one step back
