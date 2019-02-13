@@ -31,11 +31,11 @@ def prepareTestData():
     _DataF = toNpArray(_DataF)
 
     for i in range(100):
-        _LabelR.append([[0.1],[0.2],[0.3],[0.4],[0.5],[0.6],[0.7],[0.8],[0.9]])
+        _LabelR.append([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
     _LabelR = toNpArray(_LabelR)
 
     for i in range(100):
-        _LabelF.append([[0.1],[0.2],[0.3],[0.4],[0.5],[0.6],[0.7],[0.8],[0.9]])
+        _LabelF.append([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
     _LabelF = toNpArray(_LabelF)
 
 
@@ -67,7 +67,7 @@ def fieldStep_mock():
     data = [[[3], [i]] for i in range(agentsCount)]
     labels = []
     for i in range(agentsCount):
-        labels.append([[0.1],[0.2],[0.3],[0.4],[0.5],[0.6],[0.7],[0.8],[0.9]])
+        labels.append([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
 
     agentsFeedback = [0 for i in range(agentsCount)]
     moves = [0 for i in range(agentsCount)]
@@ -79,6 +79,7 @@ _ELabelR = []
 _ELabelF = []
 
 def saveNpArrayToFile_mock(pathToFile, npArray):
+    global _EDataR, _EDataF, _ELabelR, _ELabelF
     if pathToFile==pathToDataR:
         _EDataR = npArray
     elif pathToFile==pathToDataF:
@@ -102,7 +103,7 @@ class TestStringMethods(unittest.TestCase):
 
     @mock.patch('actions.reinforcement.loadNpArrayFromFile', side_effect=loadNpArrayFromFile_mock)
     @patch.object(Field, 'step', side_effect = fieldStep_mock)
-    @mock.patch('actions.reinforcement.saveNpArrayToFile', side_effect=loadNpArrayFromFile_mock)
+    @mock.patch('actions.reinforcement.saveNpArrayToFile', side_effect=saveNpArrayToFile_mock)
     def test_reinforce(self, mock_loadFile, mock_step, mock_saveToFile):
         actions.reinforcement.reinforcement([5, width, height, countR, countF])
         print("Stop")

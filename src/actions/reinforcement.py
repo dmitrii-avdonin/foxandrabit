@@ -29,15 +29,15 @@ def parseArgs(args):
 
     argsCount = len(args)
     if(argsCount>0):
-        targetStepsCount = args[0]
+        targetStepsCount = int(args[0])
 
     if(argsCount>=3):
-        width = args[1]
-        height = args[2]
+        width = int(args[1])
+        height = int(args[2])
 
     if(argsCount>=5):
-        countR = args[3]
-        countF = args[4]
+        countR = int(args[3])
+        countF = int(args[4])
     
     return (targetStepsCount, width, height, countR, countF)
 
