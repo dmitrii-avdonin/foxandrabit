@@ -22,7 +22,7 @@ def cnn_model_fn(features, labels, mode):
     # Input Layer
     # Reshape X to 4-D tensor: [batch_size, binarPositions, labels]
     #input_layer = tf.reshape(features["x"], [-1, 6, 5, 3])
-    input_layer = tf.slice(features["x"], [0, 0, 0, 0], [-1, 5, 5, 3])
+    input_layer = tf.slice(features["x"], [0, 0, 0, 0], [-1, 9, 9, 3])
     #input_layer = tf.cast(input_layer, tf.float32)
     #if(labels != None):
     #    labels = tf.cast(labels, tf.float32)
@@ -51,7 +51,7 @@ def cnn_model_fn(features, labels, mode):
     pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
 
 
-    pool1_flat = tf.reshape(pool2, [-1, 1* 1 * 16])
+    pool1_flat = tf.reshape(pool2, [-1, 2* 2 * 16])
 
     # Dense Layer Densely connected layer
     dense1 = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
