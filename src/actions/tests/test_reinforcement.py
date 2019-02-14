@@ -12,16 +12,16 @@ import actions.reinforcement
 
 width = 50
 height = 40
-countR = 10
+countR = 15
 countF = 10
 
 _DataR = []
 _DataF = []
 _LabelR = []
 _LabelF = []
-
+defaultLabel = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 def prepareTestData():
-    global _DataR, _DataF, _LabelR, _LabelF
+    global _DataR, _DataF, _LabelR, _LabelF, defaultLabel
     for i in range(100):
         _DataR.append([[1],[i]])
     _DataR = toNpArray(_DataR)
@@ -31,11 +31,11 @@ def prepareTestData():
     _DataF = toNpArray(_DataF)
 
     for i in range(100):
-        _LabelR.append([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+        _LabelR.append(defaultLabel.copy())
     _LabelR = toNpArray(_LabelR)
 
     for i in range(100):
-        _LabelF.append([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+        _LabelF.append(defaultLabel.copy())
     _LabelF = toNpArray(_LabelF)
 
 
@@ -55,8 +55,9 @@ def loadNpArrayFromFile_mock(fileName):
     return result
 
 currentAgent = AgentType.Fox
+fieldStep = 1
 def fieldStep_mock():
-    global currentAgent
+    global currentAgent, fieldStep
     if currentAgent==AgentType.Rabit:
         currentAgent=AgentType.Fox
         agentsCount = countF
@@ -64,20 +65,20 @@ def fieldStep_mock():
         currentAgent=AgentType.Rabit
         agentsCount = countR
 
-    data = [[[3], [i]] for i in range(agentsCount)]
+    data = [[[fieldStep], [i]] for i in range(agentsCount)]
     labels = []
     for i in range(agentsCount):
-        labels.append([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+        labels.append(defaultLabel.copy())
 
-    agentsFeedback = [0 for i in range(agentsCount)]
+    agentsFeedback = [i%2 for i in range(agentsCount)]
     moves = [0 for i in range(agentsCount)]
+    fieldStep += 1
     return (currentAgent, data, labels, agentsFeedback, moves)
 
 _EDataR = []
 _EDataF = []
 _ELabelR = []
 _ELabelF = []
-
 def saveNpArrayToFile_mock(pathToFile, npArray):
     global _EDataR, _EDataF, _ELabelR, _ELabelF
     if pathToFile==pathToDataR:
@@ -104,49 +105,34 @@ class TestStringMethods(unittest.TestCase):
     @mock.patch('actions.reinforcement.loadNpArrayFromFile', side_effect=loadNpArrayFromFile_mock)
     @patch.object(Field, 'step', side_effect = fieldStep_mock)
     @mock.patch('actions.reinforcement.saveNpArrayToFile', side_effect=saveNpArrayToFile_mock)
-    def test_reinforce(self, mock_loadFile, mock_step, mock_saveToFile):
-        actions.reinforcement.reinforcement([5, width, height, countR, countF])
+    def test_checkNewStatesAdded(self, mock_loadFile, mock_step, mock_saveToFile):
+        global fieldStep, countR, countF
+        fieldStep = 3
+        stepsCount = 20
+        actions.reinforcement.reinforcement([stepsCount, width, height, countR, countF])
+        rabitSteps = stepsCount // 2 + stepsCount % 2 #rabits move first
+        foxSteps = stepsCount // 2 #foxes move second
+        self.assertEqual(len(_EDataR),len(_DataR) + countR * rabitSteps)
+        self.assertEqual(len(_EDataF),len(_DataF) + countF * foxSteps)
         print("Stop")
 
 
 
+    @mock.patch('actions.reinforcement.loadNpArrayFromFile', side_effect=loadNpArrayFromFile_mock)
+    @patch.object(Field, 'step', side_effect = fieldStep_mock)
+    @mock.patch('actions.reinforcement.saveNpArrayToFile', side_effect=saveNpArrayToFile_mock)
+    def test_checkExistingStatesUpdated(self, mock_loadFile, mock_step, mock_saveToFile):
+        global fieldStep, countR, countF, defaultLabel, _DataR, _DataF, _EDataR, _EDataF
+        fieldStep = 1
+        stepsCount = 4
+        actions.reinforcement.reinforcement([stepsCount, width, height, countR, countF])
 
-    @mock.patch('utils.Utils.loadNpArrayFromFile', side_effect=loadFromFile)
-    @mock.patch('actions.reinforcement.loadNpArrayFromFile', side_effect=loadFromFile)
-    def test_mockModuleFunction(self, mock_load, mock_loadInReinf):
-        self.assertEqual(utils.Utils.loadNpArrayFromFile("asdf"), 'asdf')
-        #actions.reinforcement.reinforcement([3])
-
-    @patch.object(Field, 'step', return_value = ("a", "b", "c", "d", "e"))
-    @patch.object(Field, 'aliveRabitsCount', return_value = 555)
-    def test_patchMultipleMethods(self, mock_step, mock_aliveRabitsCount):
-        f = Field(width, height, countR, countF, vr, Mode.Reinforcement)
-        a, b, c, d, e = f.step()
-        count = f.aliveRabitsCount()
-        self.assertEqual(a, 'a')
-        self.assertEqual(count, 555)
-
-
-    @patch.object(Field, 'step')
-    def test_patchOneMethod(self, stepMock):
-        stepMock.return_value = ("a", "b", "c", "d", "e")
-        a, b, c, d, e = Field(width, height, countR, countF, vr, Mode.Reinforcement).step()
-        self.assertEqual(a, 'a')
-
-    def test_upper(self):
-        print("I'm here")
-        self.assertEqual('foo'.upper(), 'FOO')
-
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
-
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+        for i in range(len(_DataR)):
+            if(i<countR and i%2==1):
+                self.assertTrue((_ELabelR[i]!=toNpArray(defaultLabel)).any())
+            else:
+                self.assertTrue((_ELabelR[i]==toNpArray(defaultLabel)).all())
+                
 
 if __name__ == '__main__':
     unittest.main()
