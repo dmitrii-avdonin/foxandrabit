@@ -1,7 +1,7 @@
 
 import os
 
-vr = 2 # viewRadius: number of cell visible for estimating current situation 
+vr = 4 # viewRadius: number of cell visible for estimating current situation 
 
 
 fieldW = 150
