@@ -1,5 +1,5 @@
 from utils.Utils import toNpArray, saveNpArrayToFile, printCoordsArray
-from settings import AgentType, Mode, vr
+from settings import AgentType, Mode
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
 from field.Field import Field
 
@@ -15,7 +15,7 @@ def generateTrainingDataSet(args):
     height = 150
     countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
     countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
-    field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
+    field = Field(width, height, countR, countF, Mode.DataGeneration)
 
     while True:    
         agent, data, label, agentsFeedback, moves  = field.step()
@@ -33,7 +33,7 @@ def generateTrainingDataSet(args):
             break
 
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
-            field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
+            field = Field(width, height, countR, countF, Mode.DataGeneration)
 
         
     trainDataR = toNpArray(trainDataR)

@@ -21,7 +21,7 @@ class VarStore:
         self.bst = bst
 
 def parseArgs(args):    
-    targetStepsCount = 10
+    targetStepsCount = 100
     width = 150
     height = 150
     countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
@@ -65,7 +65,7 @@ def reinforcement(args):
     bstF = MyBST()
     bstF.insertList(trainDataF)
 
-    field = Field(width, height, countR, countF, vr, Mode.Reinforcement)
+    field = Field(width, height, countR, countF, Mode.Reinforcement)
 
     decrees = 1.2   # the rate increment is decreasing if we go one step back
     increment = 0.01 # the amout by wich we encrease the label
@@ -137,7 +137,7 @@ def reinforcement(args):
 
         timeList.append(time.time()-startTime)
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
-            field = Field(width, height, countR, countF, vr, Mode.Reinforcement)
+            field = Field(width, height, countR, countF, Mode.Reinforcement)
 
         stepsCount += 1
     

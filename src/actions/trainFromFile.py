@@ -4,18 +4,12 @@ from Trainer import train
 from Trainer import predict
 
 def trainFromFile(args):
-    stepsCount = None
+    #stepsCount = None
     if (len(args)>0):
         stepsCount = int(args[0])
 
     dataR = loadNpArrayFromFile(pathToDataR)
     labelR = loadNpArrayFromFile(pathToLabelR)
-
-    #_90p = len(dataR)//100 * 90
-
-    #trainingD, testD = dataR[:_90p,:], dataR[_90p:,:]
-    #trainingL, testL = labelR[:_90p,:], _90p[pLabelR80:,:]
-
     train(dataR, labelR, True, False, stepsCount)
 
 

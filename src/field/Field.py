@@ -5,7 +5,8 @@ sys.path.append('..')
 from agents.Rabit import Rabit
 from agents.Fox import Fox
 import numpy as np
-from settings import Mode, AgentType
+from settings import Mode, AgentType, vr, mr, lblShape
+import settings
 from utils.Utils import toNpArray, printCoordsArray
 from Trainer import train
 from Trainer import predict
@@ -45,7 +46,7 @@ class MyMultiGrid(MultiGrid):
         self._place_agent(coords, agent)        
 
 class Field(Model):
-    def __init__(self, width, height, num_rabits, num_foxes, viewRadius, mode):
+    def __init__(self, width, height, num_rabits, num_foxes, mode):
         self.mode = mode
         self.running = True
         self.rabitsMove = True
@@ -54,13 +55,13 @@ class Field(Model):
         self.height = height
         self.num_rabits = num_rabits
         self.num_foxes = num_foxes
-        self.viewRadius = viewRadius
 
         self.cells = [[FieldCell() for i in range(self.height)] for j in range(self.width)]
 
         self.grid = MyMultiGrid(width, height, False)
         self.scheduleRabit = RandomActivation(self)
         self.scheduleFox = RandomActivation(self)
+        self.stepCounter = 0
 
         Rabit.DeadCount = 0
         Fox.DeadCount = 0
@@ -100,7 +101,6 @@ class Field(Model):
     def getStates(self, agentList):
         states = []
         for a in agentList:
-            vr = self.viewRadius
             if(not a.isDead):
                 nbh = self.get_neighborhood(a.pos)
                 agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)]
@@ -126,11 +126,10 @@ class Field(Model):
             states.append(agentState)
         return states
 
-    # vr - viewRadius
     def get_neighborhood(self, pos, vr=-1):
         x, y = pos
         if vr==-1:
-            vr=self.viewRadius
+            vr=settings.vr
 
         coords = [[(0, 0) for j in range(vr*2 +1)] for i in range(vr*2 +1)]
         for dy in range(-vr, vr + 1):
@@ -168,8 +167,8 @@ class Field(Model):
         label = self.getLablesR(data, True)
         #visualizeAgentEnvironment(data[0])
         for i in range(len(label)):            
-            x= direction[i] % (self.viewRadius + 1)
-            y= direction[i] // (self.viewRadius + 1)
+            x= direction[i] % (lblShape)
+            y= direction[i] // (lblShape)
             if(label[i][x][y]<0):
                 printCoordsArray(data[i], 1, True) # printing agents location
                 printCoordsArray(data[i], 0, False) # printing food location
@@ -183,11 +182,10 @@ class Field(Model):
 
     def getLablesR(self, states, returnMatix=False):
         feedback = []
-        vr = self.viewRadius
-        mr = 1  # move radius - how far the agent can step from curent position
+        stl = (vr-mr) # state array coords to label array coords
         
         for i in range(len(states)): # calculating feedback for each state
-            label = [[0 for i in range(vr+1)] for j in range(vr+1)]
+            label = [[0 for i in range(lblShape)] for j in range(lblShape)]  # the label is a 3x3 square containing the for each direction
             state = states[i]
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
@@ -219,7 +217,7 @@ class Field(Model):
                                     else:
                                         lbl += cell[0] * 0.1
                                 
-                        label[dx-1][dy-1] = lbl
+                        label[dx-stl][dy-stl] = lbl
 
             #printCoordsArray(label) # printing 2D labels for each directions
             if returnMatix:
@@ -235,11 +233,10 @@ class Field(Model):
 
     def getLablesF(self, states):
         feedback = []
-        vr = self.viewRadius
-        mr = 1  # move radius - how far the agent can step from curent position
+        stl = (vr-mr) # state array coords to label array coords
         
         for i in range(len(states)): # calculating feedback for each state
-            label = [[0 for i in range(vr+1)] for j in range(vr+1)]
+            label = [[0 for i in range(lblShape)] for j in range(lblShape)] # the label is a 3x3 square containing the for each direction
             state = states[i]
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
@@ -265,7 +262,7 @@ class Field(Model):
                                     if(cell[1]==-1):  # a wall, cannot go there
                                         lbl += -0.5                                    
                                 
-                        label[dx-1][dy-1] = lbl
+                        label[dx-stl][dy-stl] = lbl
 
             #printCoordsArray(label) # printing 2D labels for each directions
             flatLabel = self.flatFeedback(label)
@@ -318,7 +315,8 @@ class Field(Model):
                 labels = self.getLablesR(data)
             
             if self.mode==Mode.Visualization:
-                self.describeSituation(data, moves)
+                #self.describeSituation(data, moves)
+                print("Step: " + str(self.stepCounter))
 
             self.setNextPos(self.rabits, moves)        
             self.scheduleRabit.step()
@@ -352,4 +350,5 @@ class Field(Model):
             self.datacollector.collect(self)
 
         self.rabitsMove = not self.rabitsMove
+        self.stepCounter += 1
         return (agentType, data, labels, agentsFeedback, moves)
