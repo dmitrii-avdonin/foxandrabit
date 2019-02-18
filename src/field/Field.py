@@ -5,15 +5,17 @@ sys.path.append('..')
 from agents.Rabit import Rabit
 from agents.Fox import Fox
 import numpy as np
-from settings import Mode, AgentType, vr, mr, lblShape
+from settings import Mode, AgentType, vr, mr, lblShape, randomMoveP, moveDirections
 import settings
-from utils.Utils import toNpArray, printCoordsArray
+from utils.Utils import toNpArray, printCoordsArray, dice
 from Trainer import train
 from Trainer import predict
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 from utils.VisualizeAgentEnvironment import visualizeAgentEnvironment
+from numpy.random import randint
+import numpy as np
 
 class MyMultiGrid(MultiGrid):
     def __init__(self, width, height, torus):
@@ -290,6 +292,14 @@ class Field(Model):
             a.feedback = 0
         return result
 
+    def applyMovesRandomization(self, predictedMoves):
+        moves = []
+        for m in predictedMoves:
+            if dice(randomMoveP):
+                moves.append(randint(moveDirections))
+            else:
+                moves.append(np.argmax(m))
+        return moves
 
     def step(self):
         print("RCount " + str(self.aliveRabitsCount()) )
@@ -309,14 +319,17 @@ class Field(Model):
             self.clearAgentsInFiledCells() # scheduleRabit.step() will initialize the next filedCells with Rabits 
             
             data = self.getStatesR()
-            moves = predict(toNpArray(data), True)
+            if self.mode==Mode.Reinforcement:
+                movesP = predict(toNpArray(data), True, False)
+                moves = self.applyMovesRandomization(movesP)
+            else:
+                moves = predict(toNpArray(data), True)
 
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement:  # get labels for rabits
                 labels = self.getLablesR(data)
             
-            if self.mode==Mode.Visualization:
-                #self.describeSituation(data, moves)
-                print("Step: " + str(self.stepCounter))
+            #if self.mode==Mode.Visualization:
+            #    self.describeSituation(data, moves)
 
             self.setNextPos(self.rabits, moves)        
             self.scheduleRabit.step()
@@ -331,7 +344,11 @@ class Field(Model):
         else:
             agentType = AgentType.Fox
             data = self.getStatesF()
-            moves = predict(toNpArray(data), False)
+            if self.mode==Mode.Reinforcement:
+                movesP = predict(toNpArray(data), False, False)
+                moves = self.applyMovesRandomization(movesP)
+            else:
+                moves = predict(toNpArray(data), False)
 
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement: # get labels for foxes
                 labels = self.getLablesF(data)
@@ -351,4 +368,5 @@ class Field(Model):
 
         self.rabitsMove = not self.rabitsMove
         self.stepCounter += 1
+        print("Field Step = " + str(self.stepCounter))
         return (agentType, data, labels, agentsFeedback, moves)

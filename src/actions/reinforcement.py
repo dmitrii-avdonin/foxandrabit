@@ -140,6 +140,11 @@ def reinforcement(args):
             field = Field(width, height, countR, countF, Mode.Reinforcement)
 
         stepsCount += 1
+        print("-----------------------------------------")
+        print("targetStepsCount = " + str(targetStepsCount))
+        print("stepsCount       = " + str(stepsCount))
+        print("Remaining        = " + str(targetStepsCount-stepsCount))
+        print("-----------------------------------------")
     
     #====================================================================================================
     print("Average step processing time: " + str(reduce(lambda x, y: x + y, timeList) / len(timeList)) )

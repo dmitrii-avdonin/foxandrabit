@@ -1,5 +1,6 @@
 import scipy.io
 import numpy as np
+import random
 
 
 def toNpArray(lst):
@@ -12,6 +13,9 @@ def loadNpArrayFromFile(filePath):
     matdata = scipy.io.loadmat(filePath)
     return matdata['data']
 
+def dice(probability):
+    r = random.random()
+    return r<=probability
 
 # { {1,2}, {2, 3}, {3, 4}}
 # width - number of columns = 3
