@@ -5,12 +5,12 @@ from field.Field import Field
 import time
 import numpy as np
 from functools import reduce
-from utils.myBst import MyBST
-
+import os
+import threading
 
 
 class VarStore:
-    def __init__(self, trainData, trainLabels, mWight, count, bst):
+    def __init__(self, trainData, trainLabels, mWight, count, dataLib):
         self.dataQ = []
         self.labelQ = []
         self.agntMoveDirsArray = None
@@ -18,7 +18,7 @@ class VarStore:
         self.trainLabels = trainLabels
         self.mWight = mWight
         self.agentsCount = count
-        self.bst = bst
+        self.dataLib = dataLib
 
 def parseArgs(args):    
     targetStepsCount = 100
@@ -42,8 +42,34 @@ def parseArgs(args):
     return (targetStepsCount, width, height, countR, countF)
 
 
+def addItemsToLib(data, lib, offset, threadIdx):
+    i = threadIdx
+    while i< len(data):
+        lib[hash(data[i].data.tobytes())] = i
+        i += offset
+        #if threadIdx==0 and i%100==0:
+        #    print(str(len(lib)))
+def generateLib(data, lib):
+    threads = []
+    offset = 5
+    for idx in range(offset):
+        thread = threading.Thread(target=addItemsToLib, args=(data, lib, offset, idx,))
+        threads.append(thread)
+        thread.start()
+    
+    for idx in range(offset):
+        threads[idx].join()
+
 
 def reinforcement(args):
+    if(not "PYTHONHASHSEED" in os.environ):
+        raise EnvironmentError("'PYTHONHASHSEED' should be defined and set to zero in order to disable hash randomization")
+    if(int(os.environ["PYTHONHASHSEED"]) != 0):
+        raise EnvironmentError("'PYTHONHASHSEED' should beset to zero in order to disable hash randomization")
+
+    test = np.array([[[1], [2]], [[3], [4]]])
+    if(hash(str(test))!=7198400437482662842):
+        raise EnvironmentError("Something is wrong hash randomization is enabled")
 
     targetStepsCount, width, height, countR, countF = parseArgs(args)
 
@@ -59,11 +85,11 @@ def reinforcement(args):
     trainDataF = [a for a in _dataF]
     trainLabelsF = [a for a in _labelF]
 
-    bstR = MyBST()
-    bstR.insertList(trainDataR)
+    dataRlib = {}
+    generateLib(_dataR, dataRlib)
 
-    bstF = MyBST()
-    bstF.insertList(trainDataF)
+    dataFlib = {}
+    generateLib(_dataF, dataFlib)
 
     field = Field(width, height, countR, countF, Mode.Reinforcement)
 
@@ -82,8 +108,8 @@ def reinforcement(args):
     moveDirsCount = 9 # number of directions where agent can move (or stay insme place)
 
     stores=[
-        VarStore(trainDataF, trainLabelsF, mWightF, countF, bstF),
-        VarStore(trainDataR, trainLabelsR, mWightR, countR, bstR),
+        VarStore(trainDataF, trainLabelsF, mWightF, countF, dataFlib),
+        VarStore(trainDataR, trainLabelsR, mWightR, countR, dataRlib),
     ]
 
     updatesCount = 0
@@ -120,14 +146,14 @@ def reinforcement(args):
 
             for i in range(vr):
                 for j in range(store.agentsCount):
-                    found = store.bst.search(store.dataQ[i][j])
-                    if(found is None):
+                    stateHash = hash(store.dataQ[i][j].data.tobytes())
+                    if(not (stateHash in store.dataLib)):
                         store.labelQ[i][j] += labelDirectionDelta[i][j] 
                         store.trainData.append(store.dataQ[i][j])
                         store.trainLabels.append(store.labelQ[i][j])
-                        store.bst.insert(store.dataQ[i][j], len(store.trainData)-1)
+                        store.dataLib[stateHash] = len(store.trainData)-1
                     else:
-                        store.trainLabels[found.tag] += labelDirectionDelta[i][j] 
+                        store.trainLabels[store.dataLib[stateHash]] += labelDirectionDelta[i][j] 
                         updatesCount += 1
 #------------------------
 

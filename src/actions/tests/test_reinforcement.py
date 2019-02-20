@@ -93,8 +93,6 @@ def saveNpArrayToFile_mock(pathToFile, npArray):
         raise ValueError('Uncnown file name: ' + pathToFile)
     return
 
-def loadFromFile(fileName):
-    return fileName
 
 class TestStringMethods(unittest.TestCase):
     global width, height, countR, countF
@@ -124,7 +122,7 @@ class TestStringMethods(unittest.TestCase):
     def test_checkExistingStatesUpdated(self, mock_loadFile, mock_step, mock_saveToFile):
         global fieldStep, countR, countF, defaultLabel, _DataR, _DataF, _EDataR, _EDataF
         fieldStep = 1
-        stepsCount = 4
+        stepsCount = 8
         actions.reinforcement.reinforcement([stepsCount, width, height, countR, countF])
 
         for i in range(len(_DataR)):
