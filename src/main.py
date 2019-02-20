@@ -4,6 +4,7 @@ from actions.initModels import initModels
 from actions.startTraining import startTraining
 from actions.visualize import visualize
 from actions.trainFromFile import trainFromFile
+from actions.reinforcement import reinforcement
 
 
 
@@ -15,7 +16,9 @@ Actions = {
     "trainModels" : startTraining,
     "trainFromFile" : trainFromFile,
     "visualize" : visualize,
-    "generateData": generateTrainingDataSet 
+    "generateData": generateTrainingDataSet,
+    "initializeModels" : initModels,
+    "reinforcement": reinforcement
 }
     
 
@@ -25,4 +28,4 @@ if __name__ == "__main__":
     if(action == None):
         print("Unknown action: " + actionName)
     else:
-        action()
+        action(sys.argv[2:100])

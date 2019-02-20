@@ -1,16 +1,16 @@
-from settings import fieldW, fieldH, FoxN, RabitN, vr, Mode
+from settings import fieldW, fieldH, FoxN, RabitN, Mode
 from field.Field import Field
 
-def startTraining():
-    field = Field(fieldW, fieldH, RabitN, FoxN, vr, Mode.Training)
+def startTraining(args):
+    field = Field(fieldW, fieldH, RabitN, FoxN, Mode.Training)
     runStats = []
     restart = 0
     iterationsCount = 0
 
     while True:
-        if(len(field.rabits)<RabitN/2 or len(field.foxes)<FoxN/2): 
-            runStats.append({"restart": restart, "iterationsCount": iterationsCount, "rabitsLeft": len(field.rabits), "foxesLeft": len(field.foxes)})
-            field = Field(fieldW, fieldH, RabitN, FoxN, vr, Mode.Training)            
+        if(field.aliveRabitsCount()<RabitN/2 or field.aliveFoxesCount()<FoxN/2): 
+            runStats.append({"restart": restart, "iterationsCount": iterationsCount, "rabitsLeft": field.aliveRabitsCount(), "foxesLeft": field.aliveFoxesCount()})
+            field = Field(fieldW, fieldH, RabitN, FoxN, Mode.Training)            
             restart += 1
             iterationsCount = 0
         field.step()

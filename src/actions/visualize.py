@@ -1,14 +1,25 @@
-from canvas.MyCanvasGrid import MyCanvasGrid, rabit_portrayal, fox_portrayal
+from canvas.MyCanvasGrid import MyCanvasGrid, rabit_portrayal, fox_portrayal, terain_portrayal
 from settings import fieldW, fieldH, FoxN, RabitN, vr, Mode
 from mesa.visualization.ModularVisualization import ModularServer
+from mesa.visualization.modules import ChartModule
 from field.Field import Field
 
 
-def visualize():
-    grid = MyCanvasGrid(rabit_portrayal, fox_portrayal, fieldW, fieldW, 1500, 1000)
+def visualize(args):
+    ppd = 8 #pixels per dimension
+    width = 150
+    height = 140
+    countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
+    countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square    
+    grid = MyCanvasGrid(rabit_portrayal, fox_portrayal, terain_portrayal, width, height, width * ppd, height * ppd)
+
+    FoxesNr = {"Label": "FoxesNr", "Color": "red"}
+    RabitsNr = {"Label": "RabitsNr", "Color": "blue"}
+    chart_count = ChartModule([FoxesNr, RabitsNr], data_collector_name='datacollector')
+
     server = ModularServer(Field,
-                        [grid],
+                        [grid, chart_count],
                         "Rabit VS Fox Model",
-                        {"width": fieldW , "height": fieldW, "num_rabits": RabitN, "num_foxes": FoxN, "viewRadius": vr, "mode": Mode.Visualization})
+                        {"width": width , "height": height, "num_rabits": countR, "num_foxes": countF, "mode": Mode.Visualization})
     server.port = 8521 # The default
     server.launch()

@@ -21,7 +21,8 @@ def cnn_model_fn(features, labels, mode):
     """Model function for CNN."""
     # Input Layer
     # Reshape X to 4-D tensor: [batch_size, binarPositions, labels]
-    input_layer = tf.reshape(features["x"], [-1, 5, 5, 3])
+    #input_layer = tf.reshape(features["x"], [-1, 6, 5, 3])
+    input_layer = tf.slice(features["x"], [0, 0, 0, 0], [-1, 9, 9, 3])
     #input_layer = tf.cast(input_layer, tf.float32)
     #if(labels != None):
     #    labels = tf.cast(labels, tf.float32)
@@ -50,15 +51,16 @@ def cnn_model_fn(features, labels, mode):
     pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
 
 
-    pool1_flat = tf.reshape(pool2, [-1, 1* 1 * 16])
+    pool1_flat = tf.reshape(pool2, [-1, 2* 2 * 16])
 
     # Dense Layer Densely connected layer
-    dense = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
+    dense1 = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
+    dense2 = tf.layers.dense(inputs=dense1, units=1024, activation=tf.nn.relu)
 
     
 
     # Logits layer
-    logits = tf.layers.dense(inputs=dense, units=9)
+    logits = tf.layers.dense(inputs=dense2, units=9)
 
     predictions = {
         # Generate predictions (for PREDICT and EVAL mode)
@@ -100,7 +102,7 @@ def getModelDir(isPrey):
         return "./PredModel"
 
 
-def train( _data, _labels, isPrey, modelInitialization):
+def train( _data, _labels, isPrey, modelInitialization, stepsCount = 100000):
     _90p = len(_data)//100 * 90
 
     trainingD, testD = _data[:_90p,:], _data[_90p:,:]
@@ -129,7 +131,7 @@ def train( _data, _labels, isPrey, modelInitialization):
         shuffle=True)
     mnist_classifier.train(
         input_fn=train_input_fn,
-        steps=100000 if not modelInitialization else 1,
+        steps=stepsCount if not modelInitialization else 1,
         hooks=[logging_hook])
 
     # Evaluate the model and print results

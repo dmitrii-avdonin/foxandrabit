@@ -1,5 +1,6 @@
 import scipy.io
 import numpy as np
+import random
 
 
 def toNpArray(lst):
@@ -12,6 +13,9 @@ def loadNpArrayFromFile(filePath):
     matdata = scipy.io.loadmat(filePath)
     return matdata['data']
 
+def dice(probability):
+    r = random.random()
+    return r<=probability
 
 # { {1,2}, {2, 3}, {3, 4}}
 # width - number of columns = 3
@@ -32,7 +36,10 @@ def printCoordsArray(arr, elemIdx=None, printAsInt=False):
 
                 if(not printAsInt and (isinstance(val, float) or isinstance(val, np.float32))):
                     line += "{0:6.2f} ".format(val) 
-                else:
-                    line += "{0:6.0f} ".format(val)
+                else: 
+                    if(not printAsInt and (isinstance(val, list))):
+                        line += " " + str(val) + " "
+                    else:
+                        line += "{0:6.0f} ".format(val)
             print(line)
         print()     

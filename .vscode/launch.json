@@ -33,7 +33,23 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
-            "args": ["trainFromFile"],
+            "args": ["trainFromFile", "100000"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "InitializeModels",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": ["initializeModels"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Reinforcement",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": ["reinforcement"],
             "console": "integratedTerminal"
         }
     ]

@@ -1,11 +1,11 @@
-from utils.Utils import toNpArray, saveNpArrayToFile
-from settings import AgentType, Mode, vr
+from utils.Utils import toNpArray, saveNpArrayToFile, printCoordsArray
+from settings import AgentType, Mode
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
 from field.Field import Field
 
 
 
-def generateTrainingDataSet():
+def generateTrainingDataSet(args):
     trainDataR = []
     trainLabelsR = []
     trainDataF = []
@@ -15,10 +15,10 @@ def generateTrainingDataSet():
     height = 150
     countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
     countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
-    field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
+    field = Field(width, height, countR, countF, Mode.DataGeneration)
 
     while True:    
-        agent, data, label = field.step()
+        agent, data, label, agentsFeedback, moves  = field.step()
         trainData = trainDataR if agent==AgentType.Rabit else trainDataF
         trainLabels = trainLabelsR if agent==AgentType.Rabit else trainLabelsF
 
@@ -29,11 +29,11 @@ def generateTrainingDataSet():
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>200000):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>1000):
             break
 
-        if(len(field.rabits)<countR/4 or len(field.foxes)<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
-            field = Field(width, height, countR, countF, vr, Mode.DataGeneration)
+        if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
+            field = Field(width, height, countR, countF, Mode.DataGeneration)
 
         
     trainDataR = toNpArray(trainDataR)
