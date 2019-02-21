@@ -3,3 +3,4 @@ PreyModel
 PredModel
 trainingData
 /*.7z
+.mypy_cache

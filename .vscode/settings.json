@@ -8,5 +8,9 @@
         "-s", ".",
         "-p", "*test*.py"
     ],
-    "python.unitTest.cwd": "${workspaceFolder}/src"
+    "python.unitTest.cwd": "${workspaceFolder}/src",
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/__init__.py": true,
+    }    
 }
