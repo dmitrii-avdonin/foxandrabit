@@ -1,5 +1,5 @@
 from utils.Utils import toNpArray, saveNpArrayToFile, printCoordsArray, loadNpArrayFromFile, printCoordsArray
-from settings import AgentType, Mode, vr
+from settings import AgentType, Mode, vr, moveDirections
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
 from field.Field import Field
 import time
@@ -79,6 +79,13 @@ def reinforcement(args):
     _dataF = loadNpArrayFromFile(pathToDataF)
     _labelF = loadNpArrayFromFile(pathToLabelF)
 
+    # adding aditional dimenion for metadata if it doesn't exit yet
+    emptyDim = np.zeros(moveDirections)
+    if(len(_labelR.shape)==2):
+        _labelR = np.insert(_labelR[:,np.newaxis], [1, 1, 1], emptyDim, axis=1)
+    if(len(_labelF.shape)==2):
+        _labelF = np.insert(_labelF[:,np.newaxis], [1, 1, 1], emptyDim, axis=1)
+
     # converting to lists
     trainDataR = [a for a in _dataR]
     trainLabelsR = [a for a in _labelR]
@@ -146,14 +153,19 @@ def reinforcement(args):
 
             for i in range(vr):
                 for j in range(store.agentsCount):
+                    if(not labelDirectionDelta[i][j].any()):  # ignoring if direction delta is zero, can happen for dead agents
+                        continue
                     stateHash = hash(store.dataQ[i][j].data.tobytes())
                     if(not (stateHash in store.dataLib)):
                         store.labelQ[i][j] += labelDirectionDelta[i][j] 
                         store.trainData.append(store.dataQ[i][j])
-                        store.trainLabels.append(store.labelQ[i][j])
+                        newLabelWithMetadata = np.insert(store.labelQ[i][j][np.newaxis], [1, 1, 1], emptyDim, axis=0)
+                        store.trainLabels.append(newLabelWithMetadata)
                         store.dataLib[stateHash] = len(store.trainData)-1
                     else:
-                        store.trainLabels[store.dataLib[stateHash]] += labelDirectionDelta[i][j] 
+                        store.trainLabels[store.dataLib[stateHash]][0] += labelDirectionDelta[i][j] # updating actual label
+                        store.trainLabels[store.dataLib[stateHash]][1] += labelDirectionDelta[i][j] # reinforcement delta - for statistical analisys
+                        store.trainLabels[store.dataLib[stateHash]][2] += store.agntMoveDirsArray[i][j] # count reinforcements for each direction - for analisys
                         updatesCount += 1
 #------------------------
 
@@ -164,6 +176,10 @@ def reinforcement(args):
         timeList.append(time.time()-startTime)
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
             field = Field(width, height, countR, countF, Mode.Reinforcement)
+            for k in range(2):
+                stores[k].agntMoveDirsArray = None
+                stores[k].dataQ = []
+                stores[k].labelQ = []
 
         stepsCount += 1
         print("-----------------------------------------")

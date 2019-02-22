@@ -12,7 +12,7 @@ fieldH = 100
 RabitN = 600
 FoxN = 200
 
-randomMoveP = 0.05 # the probability that the Agent will move in a random direction
+randomMoveP = 0.15 # the probability that the Agent will move in a random direction
 moveDirections = 9 # number of ways an Agent can move from his current pozition (including staying on the same place)
 
 trainingDataDir = os.path.abspath(r"./trainingData")

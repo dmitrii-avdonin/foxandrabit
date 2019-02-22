@@ -103,7 +103,7 @@ class Field(Model):
     def getStates(self, agentList):
         states = []
         for a in agentList:
-            if(not a.isDead):
+            if(not a.isBuried()):
                 nbh = self.get_neighborhood(a.pos)
                 agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)]
                 for i in range(vr*2+1):
@@ -121,7 +121,7 @@ class Field(Model):
                 agentState = [[ [0, 0, 0] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)] 
             for j in range(vr*2+1):
                 agentState[vr*2 + 1][j] = [0, 0, 0]
-            if(not a.isDead):
+            if(not a.isBuried()):
                 agentState[vr*2 + 1][0] = [a.fullness, 0, 0]
 
             #printCoordsArray(agentState)
@@ -192,7 +192,7 @@ class Field(Model):
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
 
-            if(not self.rabits[i].isDead):
+            if(not self.rabits[i].isBuried()):
                 # calculating the feedback for each direction where the agend can go
                 for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
                     for dy in self.getShift(vr, mr): # samve for y coordinate  
@@ -243,7 +243,7 @@ class Field(Model):
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
 
-            if(not self.rabits[i].isDead):
+            if(not self.rabits[i].isBuried()):
                 # calculating the feedback for each direction where the agend can go
                 for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
                     for dy in self.getShift(vr, mr): # samve for y coordinate  
@@ -337,8 +337,8 @@ class Field(Model):
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), True, False)        #train rabits
 
-            if self.mode==Mode.Reinforcement:
-                agentsFeedback = self.getAgentsReinforcementFeedback(self.rabits)
+            #if self.mode==Mode.Reinforcement:
+            agentsFeedback = self.getAgentsReinforcementFeedback(self.rabits)
 
             self.datacollector.collect(self)
         else:
@@ -361,8 +361,8 @@ class Field(Model):
             if self.mode==Mode.Training:
                 train(toNpArray(data), toNpArray(labels), False, False)       #train foxes
 
-            if self.mode==Mode.Reinforcement:
-                agentsFeedback = self.getAgentsReinforcementFeedback(self.foxes)
+            #if self.mode==Mode.Reinforcement:
+            agentsFeedback = self.getAgentsReinforcementFeedback(self.foxes)
 
             self.datacollector.collect(self)
 

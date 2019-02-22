@@ -5,6 +5,7 @@ TODO:
 - add agent reproduction functionality
 - investigate recurent NN
 - add test that will check that the order of the stateData and labels is not changed during reinforcement
+- make random population size during reinforcement
 - add agent fullness to the model
 
 DONE:
