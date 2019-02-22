@@ -20,6 +20,6 @@ def visualize(args):
     server = ModularServer(Field,
                         [grid, chart_count],
                         "Rabit VS Fox Model",
-                        {"width": width , "height": height, "num_rabits": countR, "num_foxes": countF, "mode": Mode.Visualization})
+                        {"width": width , "height": height, "num_rabits": countR, "num_foxes": countF, "mode": Mode.Visualization, "seed": 999})
     server.port = 8521 # The default
     server.launch()

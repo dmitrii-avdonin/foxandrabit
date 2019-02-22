@@ -1,13 +1,11 @@
-from numpy.random import randint
-
 class FieldCell:
     MaxFood = 0.9
     inc = 0.3
-    def __init__(self):
+    def __init__(self, randint):
         self.rabitsCount = None
         self.foodExists = False
         self.food = 0.
-        if randint(10) < 2:
+        if randint(1, 10) <= 2:
             self.food = 0.9
             self.foodExists = True
 

@@ -48,7 +48,7 @@ class MyMultiGrid(MultiGrid):
         self._place_agent(coords, agent)        
 
 class Field(Model):
-    def __init__(self, width, height, num_rabits, num_foxes, mode):
+    def __init__(self, width, height, num_rabits, num_foxes, mode, seed=None):
         self.mode = mode
         self.running = True
         self.rabitsMove = True
@@ -58,7 +58,7 @@ class Field(Model):
         self.num_rabits = num_rabits
         self.num_foxes = num_foxes
 
-        self.cells = [[FieldCell() for i in range(self.height)] for j in range(self.width)]
+        self.cells = [[FieldCell(self.random.randint) for i in range(self.height)] for j in range(self.width)]
 
         self.grid = MyMultiGrid(width, height, False)
         self.scheduleRabit = RandomActivation(self)
