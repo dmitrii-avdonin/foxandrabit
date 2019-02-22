@@ -1,4 +1,4 @@
-from utils.Utils import toNpArray, saveNpArrayToFile, printCoordsArray, loadNpArrayFromFile, printCoordsArray
+from utils.Utils import toNpArray, saveNpArrayToFile, printCoordsArray, loadNpArrayFromFile
 from settings import AgentType, Mode, vr, moveDirections
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
 from field.Field import Field

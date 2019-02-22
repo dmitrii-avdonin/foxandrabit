@@ -51,6 +51,14 @@
             "program": "${workspaceFolder}/src/main.py",
             "args": ["reinforcement"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Analisys",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/utils/stat.py",
+            "args": [],
+            "console": "integratedTerminal"
         }
     ]
 }
