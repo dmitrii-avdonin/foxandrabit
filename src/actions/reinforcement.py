@@ -21,7 +21,7 @@ class VarStore:
         self.dataLib = dataLib
 
 def parseArgs(args):    
-    targetStepsCount = 100
+    targetStepsCount = 200
     width = 150
     height = 150
     countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
@@ -62,6 +62,7 @@ def generateLib(data, lib):
 
 
 def reinforcement(args):
+    seed = 9999
     if(not "PYTHONHASHSEED" in os.environ):
         raise EnvironmentError("'PYTHONHASHSEED' should be defined and set to zero in order to disable hash randomization")
     if(int(os.environ["PYTHONHASHSEED"]) != 0):
@@ -98,7 +99,7 @@ def reinforcement(args):
     dataFlib = {}
     generateLib(_dataF, dataFlib)
 
-    field = Field(width, height, countR, countF, Mode.Reinforcement)
+    field = Field(width, height, countR, countF, Mode.Reinforcement, seed = seed)
 
     decrees = 1.2   # the rate increment is decreasing if we go one step back
     increment = 0.01 # the amout by wich we encrease the label
@@ -175,7 +176,7 @@ def reinforcement(args):
 
         timeList.append(time.time()-startTime)
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
-            field = Field(width, height, countR, countF, Mode.Reinforcement)
+            field = Field(width, height, countR, countF, Mode.Reinforcement, seed = seed)
             for k in range(2):
                 stores[k].agntMoveDirsArray = None
                 stores[k].dataQ = []

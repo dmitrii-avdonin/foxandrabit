@@ -29,7 +29,7 @@ def generateTrainingDataSet(args):
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>1000):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>100):
             break
 
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  
