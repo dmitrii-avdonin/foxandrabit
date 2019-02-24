@@ -1,0 +1,7 @@
+bst.pygasus.core==1.0.1
+matplotlib==3.0.2
+mesa==0.8.5
+mock==2.0.0
+numpy==1.16.1
+scipy==1.2.1
+tensorflow==1.12.0
