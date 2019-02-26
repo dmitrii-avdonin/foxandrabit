@@ -325,6 +325,12 @@ class Field(Model):
             else:
                 moves = predict(toNpArray(data), True)
 
+            # cleaning the moves for rabits that were eaten by Foxes during previous step
+            if self.mode==Mode.Reinforcement:
+                for i in range(self.num_rabits) :
+                    if self.rabits[i].isDead:
+                        moves[i]=-1 # this move should be ignored during reinforcement because rabit died on previous step
+
             if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement:  # get labels for rabits
                 labels = self.getLablesR(data)
             

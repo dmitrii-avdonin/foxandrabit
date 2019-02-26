@@ -21,20 +21,20 @@ class VarStore:
         self.dataLib = dataLib
 
 def parseArgs(args):    
-    targetStepsCount = 200
-    width = 150
-    height = 150
-    countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
-    countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
-
     argsCount = len(args)
+
+    targetStepsCount = 100    
     if(argsCount>0):
         targetStepsCount = int(args[0])
-
+    
+    width = 150
+    height = 150
     if(argsCount>=3):
         width = int(args[1])
         height = int(args[2])
 
+    countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
+    countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
     if(argsCount>=5):
         countR = int(args[3])
         countF = int(args[4])
@@ -101,8 +101,8 @@ def reinforcement(args):
 
     field = Field(width, height, countR, countF, Mode.Reinforcement, seed = seed)
 
-    decrees = 1.2   # the rate increment is decreasing if we go one step back
-    increment = 0.01 # the amout by wich we encrease the label
+    decrees = 1.1   # the rate increment is decreasing if we go one step back
+    increment = 0.02 # the amout by wich we encrease the label
 
     vWeight = np.zeros(vr)
     inc = increment
@@ -136,7 +136,8 @@ def reinforcement(args):
 
         agntMoveDirs = np.zeros([store.agentsCount, moveDirsCount])
         for i in range(store.agentsCount):
-            agntMoveDirs[i][moves[i]] = 1
+            if(moves[i]>0): # can be -1 in case when a rabit died on previous step eaten by a fox, so current move sould not be penalized - ignoring
+                agntMoveDirs[i][moves[i]] = 1
 
         if(store.agntMoveDirsArray is None):
             store.agntMoveDirsArray = agntMoveDirs[np.newaxis]
@@ -188,6 +189,23 @@ def reinforcement(args):
         print("stepsCount       = " + str(stepsCount))
         print("Remaining        = " + str(targetStepsCount-stepsCount))
         print("-----------------------------------------")
+
+        if(len(trainLabelsR)>1300000):
+            for i in reversed(range(len(trainLabelsR))):
+                if(trainLabelsR[i][2].sum()==0):
+                    del trainDataR[i]
+                    del trainLabelsR[i]
+
+            for i in reversed(range(len(trainLabelsF))):
+                if(trainLabelsF[i][2].sum()==0):
+                    del trainDataF[i]
+                    del trainLabelsF[i]
+
+            dataRlib.clear()
+            generateLib(trainDataR, dataRlib)
+
+            dataFlib.clear()
+            generateLib(trainDataF, dataFlib)
     
     #====================================================================================================
     print("Average step processing time: " + str(reduce(lambda x, y: x + y, timeList) / len(timeList)) )

@@ -1,12 +1,14 @@
 
 TODO:
-- add metadata to labels that will store the number of updates were applied to labels
+- add possibility several fox to eat one rabit 
 - check the feedback function in Field, after adding MultiGreed there is no penality for multiple rabits gathering on same cell
 - add agent reproduction functionality
 - investigate recurent NN
 - add test that will check that the order of the stateData and labels is not changed during reinforcement
-- make random population size during reinforcement
 - add agent fullness to the model
+- make random population size during reinforcement
+
 
 DONE:
+- add metadata to labels that will store the number of updates were applied to labels
 - speedup reinforcement using balanced search threes or hastables..

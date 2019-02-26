@@ -47,7 +47,7 @@ def updatesCount(plt):
 
 def updateSize(plt):
     avgAbsDelta =  np.array([ np.sum(np.abs(a))/len(a) for a in delta if np.any(a)])
-    bins =  [i * 0.005 for i in range(11)]
+    bins =  [i * 0.005 for i in range(41)]
     digitized = np.digitize(avgAbsDelta, bins)
     unique, counts = np.unique(digitized, return_counts=True)
     labels =  ["<" + str(bins[u]) for u in unique]
