@@ -31,12 +31,12 @@ def cnn_model_fn(features, labels, mode):
     # Convolutional Layer #1
     conv1 = tf.layers.conv2d(
         inputs=input_layer,
-        filters=32,
-        kernel_size=[3, 3],
+        filters=64,
+        kernel_size=[2, 2],
         padding="same",
         activation=tf.nn.relu)
 
-    pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+    #pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
 
 
 
@@ -51,7 +51,7 @@ def cnn_model_fn(features, labels, mode):
     # pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
 
 
-    pool1_flat = tf.reshape(pool1, [-1, 4* 4 * 32])
+    pool1_flat = tf.reshape(conv1, [-1, 9* 9 * 64])
 
     # Dense Layer Densely connected layer
     dense1 = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)

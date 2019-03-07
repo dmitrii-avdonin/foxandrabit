@@ -356,8 +356,8 @@ class Field(Model):
             else:
                 moves = predict(toNpArray(data), False)
 
-            if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement: # get labels for foxes
-                labels = self.getLablesF(data)
+            #if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement: # get labels for foxes
+            labels = self.getLablesF(data)
             
             self.setNextPos(self.foxes, moves)        
             self.scheduleFox.step()

@@ -33,7 +33,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
-            "args": ["trainFromFile", "100000"],
+            "args": ["trainFromFile", "10000"],
             "console": "integratedTerminal"
         },
         {

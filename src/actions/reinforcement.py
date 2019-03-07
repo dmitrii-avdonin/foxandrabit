@@ -23,12 +23,12 @@ class VarStore:
 def parseArgs(args):    
     argsCount = len(args)
 
-    targetStepsCount = 100    
+    targetStepsCount = 400    
     if(argsCount>0):
         targetStepsCount = int(args[0])
     
-    width = 150
-    height = 150
+    width = 6
+    height = 6
     if(argsCount>=3):
         width = int(args[1])
         height = int(args[2])
@@ -102,7 +102,7 @@ def reinforcement(args):
     field = Field(width, height, countR, countF, Mode.Reinforcement, seed = seed)
 
     decrees = 1.1   # the rate increment is decreasing if we go one step back
-    increment = 0.02 # the amout by wich we encrease the label
+    increment = 0.1 # the amout by wich we encrease the label
 
     vWeight = np.zeros(vr)
     inc = increment
@@ -190,7 +190,7 @@ def reinforcement(args):
         print("Remaining        = " + str(targetStepsCount-stepsCount))
         print("-----------------------------------------")
 
-        if(len(trainLabelsR)>1300000):
+        if(len(trainLabelsR)>1000):
             for i in reversed(range(len(trainLabelsR))):
                 if(trainLabelsR[i][2].sum()==0):
                     del trainDataR[i]
