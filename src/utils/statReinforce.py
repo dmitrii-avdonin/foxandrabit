@@ -2,11 +2,10 @@ from Utils import printCoordsArray, loadNpArrayFromFile
 from matplotlib.ticker import NullFormatter  # useful for `logit` scale
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import norm
 import sys
 
 from time import time
-from sklearn import (manifold, datasets, decomposition, ensemble,
-             discriminant_analysis, random_projection)
 
 sys.path.append('.\src')
 from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
@@ -16,6 +15,9 @@ global data, label, delta, count, figName
 def analyzeRabitsData():
     plt.figure(figName)
 
+    labelDistributionMin(plt)
+    labelDistributionMax(plt)
+
     updatesCount(plt)
 
     updateSize(plt)
@@ -24,6 +26,64 @@ def analyzeRabitsData():
     plt.subplots_adjust(top=0.92, bottom=0.08, left=0.10, right=0.95, hspace=0.25,
                     wspace=0.35)
     plt.show()
+
+
+
+
+def labelDistributionMin(plt):
+    lbl = [min(a) for a in label]
+    m = min(lbl)
+    M = max(lbl)
+    stepNr = 10
+    counts = [0 for i in range(stepNr)]
+    step = (M-m)/stepNr
+    for i in range(stepNr):
+        for v in lbl:
+            if(m<=v and v<(m+step)):
+                counts[i] += 1
+        m += step
+
+    m = min(lbl)
+    labels =  [round(m + step*i, 1) for i in range(stepNr)]
+
+    plt.subplot(223)
+    plt.bar(range(stepNr), counts, tick_label=labels)
+    plt.yscale('log')
+    plt.title('Label min value distribution')
+    plt.xlabel('Value')
+    plt.ylabel('Number of Labels')
+    plt.grid(True)
+
+    for i, v in enumerate(counts):
+        plt.text(i , 3, str(v), color='black', verticalalignment='bottom', rotation=90)
+
+
+def labelDistributionMax(plt):
+    lbl = [max(a) for a in label]
+    m = min(lbl)
+    M = max(lbl)
+    stepNr = 10
+    counts = [0 for i in range(stepNr)]
+    step = (M-m)/stepNr
+    for i in range(stepNr):
+        for v in lbl:
+            if(m<=v and v<(m+step)):
+                counts[i] += 1
+        m += step
+
+    m = min(lbl)
+    labels =  [round(m + step*i, 1) for i in range(stepNr)]
+
+    plt.subplot(224)
+    plt.bar(range(stepNr), counts, tick_label=labels)
+    plt.yscale('log')
+    plt.title('Label max value distribution')
+    plt.xlabel('Value')
+    plt.ylabel('Number of Labels')
+    plt.grid(True)
+
+    for i, v in enumerate(counts):
+        plt.text(i , 5, str(v), color='black', verticalalignment='bottom', rotation=90)
 
 
 def updatesCount(plt):
@@ -86,6 +146,7 @@ if __name__ == "__main__":
 
     delta = label[:, 1, :]
     count = label[:, 2, :]
+    label = label[:, 0, :]
 
 
     analyzeRabitsData()
