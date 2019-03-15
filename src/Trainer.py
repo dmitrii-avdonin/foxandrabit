@@ -33,25 +33,24 @@ def cnn_model_fn(features, labels, mode):
         inputs=input_layer,
         filters=64,
         kernel_size=[2, 2],
+        padding="valid",
+        activation=tf.nn.relu)
+
+    pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=1)
+
+
+    # Convolutional Layer #2
+    conv2 = tf.layers.conv2d(
+        inputs=pool1,
+        filters=32,
+        kernel_size=[2, 2],
         padding="same",
         activation=tf.nn.relu)
 
-    #pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+    #pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
 
 
-
-    # # Convolutional Layer #2
-    # conv2 = tf.layers.conv2d(
-    #     inputs=pool1,
-    #     filters=16,
-    #     kernel_size=[5, 5],
-    #     padding="same",
-    #     activation=tf.nn.relu)
-
-    # pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
-
-
-    pool1_flat = tf.reshape(conv1, [-1, 9* 9 * 64])
+    pool1_flat = tf.reshape(conv2, [-1, 7 * 7 * 32 ])
 
     # Dense Layer Densely connected layer
     dense1 = tf.layers.dense(inputs=pool1_flat, units=1024, activation=tf.nn.relu)
@@ -78,6 +77,7 @@ def cnn_model_fn(features, labels, mode):
     # Calculate Loss (for both TRAIN and EVAL modes)
     #loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
     loss = tf.reduce_mean(tf.abs(labels-logits))
+    #loss = tf.reduce_max(tf.abs(labels-logits))
 
     # Configure the Training Op (for TRAIN mode)
     if mode == tf.estimator.ModeKeys.TRAIN:

@@ -23,12 +23,12 @@ class VarStore:
 def parseArgs(args):    
     argsCount = len(args)
 
-    targetStepsCount = 400    
+    targetStepsCount = 50
     if(argsCount>0):
         targetStepsCount = int(args[0])
     
-    width = 6
-    height = 6
+    width = 150
+    height = 150
     if(argsCount>=3):
         width = int(args[1])
         height = int(args[2])
@@ -45,7 +45,7 @@ def parseArgs(args):
 def addItemsToLib(data, lib, offset, threadIdx):
     i = threadIdx
     while i< len(data):
-        lib[hash(data[i].data.tobytes())] = i
+        lib[hash(data[i][:9, :, :].data.tobytes())] = i
         i += offset
         #if threadIdx==0 and i%100==0:
         #    print(str(len(lib)))
@@ -102,7 +102,7 @@ def reinforcement(args):
     field = Field(width, height, countR, countF, Mode.Reinforcement, seed = seed)
 
     decrees = 1.1   # the rate increment is decreasing if we go one step back
-    increment = 0.1 # the amout by wich we encrease the label
+    increment = 0.15 # the amout by wich we encrease the label
 
     vWeight = np.zeros(vr)
     inc = increment
@@ -157,7 +157,7 @@ def reinforcement(args):
                 for j in range(store.agentsCount):
                     if(not labelDirectionDelta[i][j].any()):  # ignoring if direction delta is zero, can happen for dead agents
                         continue
-                    stateHash = hash(store.dataQ[i][j].data.tobytes())
+                    stateHash = hash(store.dataQ[i][j][:9, :, :].data.tobytes())
                     if(not (stateHash in store.dataLib)):
                         store.labelQ[i][j] += labelDirectionDelta[i][j] 
                         store.trainData.append(store.dataQ[i][j])
@@ -190,7 +190,7 @@ def reinforcement(args):
         print("Remaining        = " + str(targetStepsCount-stepsCount))
         print("-----------------------------------------")
 
-        if(len(trainLabelsR)>1000):
+        if(len(trainLabelsR)>100000):
             for i in reversed(range(len(trainLabelsR))):
                 if(trainLabelsR[i][2].sum()==0):
                     del trainDataR[i]

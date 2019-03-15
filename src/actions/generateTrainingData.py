@@ -11,8 +11,8 @@ def generateTrainingDataSet(args):
     trainDataF = []
     trainLabelsF = []
 
-    width = 10
-    height = 10
+    width = 150
+    height = 100
     countR = int(round(height * width / 25 * 3)) # avg 3 Rabits per each 5x5 cells square
     countF = int(round(height * width / 25 * 1)) # avg 1 Fox per each 5x5 cells square 
     field = Field(width, height, countR, countF, Mode.DataGeneration)
@@ -29,7 +29,7 @@ def generateTrainingDataSet(args):
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>1):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>5000):
             break
 
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  

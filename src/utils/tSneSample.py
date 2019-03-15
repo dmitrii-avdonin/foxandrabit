@@ -29,10 +29,6 @@ count = labelR[:, 2, :]
 def analyzeRabitsData():
     plt.figure(1)
 
-    updatesCount(plt)
-
-    updateSize(plt)
-
     tSNE(plt)
 
     plt.gca().yaxis.set_minor_formatter(NullFormatter())
@@ -46,7 +42,7 @@ def plot_embedding(X, plt, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)     
     #plt.figure()
-    ax = plt.subplot(223)
+    ax = plt.subplot(111)
     for i in range(X.shape[0]):
         plt.text(X[i, 0], X[i, 1], "o",
                  color=plt.cm.Set1(np.argmax(labels[i]) / 10.),
@@ -75,41 +71,6 @@ def tSNE(plt):
         X_tsne = tsne.fit_transform(labels)
         plot_embedding(X_tsne, plt,
                 "t-SNE embedding of the labels (time %.2fs)" % (time() - t0))
-
-def updatesCount(plt):
-    # Reinforcement eficiency investigation
-    unique, counts = np.unique(np.array([a.sum() for a in count]), return_counts=True)
-
-    plt.subplot(221)
-    plt.bar(range(len(unique)), counts, tick_label=unique.astype(int))
-    plt.yscale('log')
-    plt.title('Update Count')
-    plt.xlabel('Number of times label was updated')
-    plt.ylabel('Number of Labels')
-    plt.grid(True)    
-
-    for i, v in enumerate(counts):
-        plt.text(i , 1.5 , str(v), color='black', verticalalignment='bottom', rotation=90)
-
-
-def updateSize(plt):
-    avgAbsDelta =  np.array([ np.sum(np.abs(a))/len(a) for a in delta if np.any(a)])
-    bins =  [i * 0.005 for i in range(41)]
-    digitized = np.digitize(avgAbsDelta, bins)
-    unique, counts = np.unique(digitized, return_counts=True)
-    labels =  ["<" + str(bins[u]) for u in unique]
-
-    plt.subplot(222)
-    plt.bar(range(len(unique)), counts, tick_label=labels)
-    plt.yscale('log')
-    plt.title('Update Amount')
-    plt.xlabel('Label average absolute update amount ')
-    plt.ylabel('Number of Labels')
-    plt.grid(True)
-
-    for i, v in enumerate(counts):
-        plt.text(i , 3.5 , str(v), color='black', verticalalignment='bottom', rotation=90)
-
 
 
 if __name__ == "__main__":

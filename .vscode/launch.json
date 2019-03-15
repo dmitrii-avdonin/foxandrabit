@@ -33,7 +33,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
-            "args": ["trainFromFile", "10000"],
+            "args": ["trainFromFile", "50000"],
             "console": "integratedTerminal"
         },
         {
@@ -56,8 +56,8 @@
             "name": "Analisys",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/utils/stat.py",
-            "args": [],
+            "program": "${workspaceFolder}/src/utils/statReinforce.py",
+            "args": ["F"],
             "console": "integratedTerminal"
         }
     ]

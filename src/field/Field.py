@@ -48,6 +48,8 @@ class MyMultiGrid(MultiGrid):
         self._place_agent(coords, agent)        
 
 class Field(Model):
+    wallConst = -9
+
     def __init__(self, width, height, num_rabits, num_foxes, mode, seed=None):
         self.mode = mode
         self.running = True
@@ -69,7 +71,7 @@ class Field(Model):
         Fox.DeadCount = 0
         self.datacollector = DataCollector(
         model_reporters={"RabitsNr": lambda model : model.aliveRabitsCount(), "FoxesNr": lambda model : model.aliveFoxesCount()},  # A function to call
-        agent_reporters={})  # An agent attribute
+        agent_reporters={})  # An agent attribute        
 
         self.rabits = []
         for i in range(self.num_rabits):
@@ -110,7 +112,7 @@ class Field(Model):
                     for j in range(vr*2+1):
                         (x,y) = nbh[i][j]
                         if self.grid.out_of_bounds((x, y)):  #this cell can't be reached 
-                            agentState[i][j] = [-1, -1, a.fullness]
+                            agentState[i][j] = [Field.wallConst, Field.wallConst, Field.wallConst]
                         else:
                             food = self.cells[x][y].food
                             food = round(food, 1) #rounding to one decimal place
@@ -201,23 +203,28 @@ class Field(Model):
                             for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
                                 cell = state[cx][cy]
                                 if(cx==dx and cy==dy): #this is the direction cel
-                                    if(cell[2] > 0 ): # number of AgentType.Fox on this cell
-                                        lbl += -4
-
-                                    if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
-                                        lbl += -0.4 * cell[1]
-
-                                    if(cell[1]==-1):  # a wall, cannot go there
+                                    if(cell[1]==Field.wallConst):  # a wall, cannot go there
                                         lbl += -2
                                     else:
                                         lbl += cell[0]
+
+                                        if(cell[2] > 0 ): # number of AgentType.Fox on this cell
+                                            lbl += -4
+
+                                        if(not(cx==vr and cy==vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his possible next location
+                                            lbl += -0.4 * cell[1]
+
                                 else:
-                                    if(cell[2]>0):
-                                        lbl -= 2
-                                    if(cell[1]==-1):  # a wall, cannot go there
+                                    if(cell[1]==Field.wallConst):  # a wall, cannot go there
                                         lbl += -1
                                     else:
                                         lbl += cell[0] * 0.1
+
+                                        if(not(cx==vr and cy==vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his possible next location
+                                            lbl += -0.2 * cell[1]
+
+                                        if(cell[2]>0):
+                                            lbl += -2
                                 
                         label[dx-stl][dy-stl] = lbl
 
@@ -252,17 +259,22 @@ class Field(Model):
                             for cy in self.getShift(dy, 1): # it is expected that vr is at leas mr+1 otherwise we can get out of range
                                 cell = state[cx][cy]
                                 if(cx==dx and cy==dy): #this is the direction cel
-                                    
-                                    lbl += 2 * cell[1] # bonus multiplied by number of rabits on that cell
+                                    if(cell[1]==Field.wallConst):  # a wall, cannot go there
+                                        lbl += -2
+                                    else:                                    
+                                        lbl += 2 * cell[1] # bonus multiplied by number of rabits on that cell
 
-                                    if((cx!=vr or cy!=vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his current location
-                                        lbl += -0.2 * cell[2]
-                                    if(cell[1]==-1):  # a wall, cannot go there
-                                        lbl += -1
+                                        if(not(cx==vr and cy==vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his possible next location
+                                            lbl += -0.4 * cell[2]
                                 else:
-                                    lbl += 1 * cell[1]
-                                    if(cell[1]==-1):  # a wall, cannot go there
-                                        lbl += -0.5                                    
+                                    if(cell[1]==Field.wallConst):  # a wall, cannot go there
+                                        lbl += -1
+                                    else:
+                                        lbl += 1 * cell[1]
+
+                                        if(not(cx==vr and cy==vr)): # condition to avoid that the agent (whose state we analize) adds a minus to his possible next location
+                                            lbl += -0.2 * cell[2]
+
                                 
                         label[dx-stl][dy-stl] = lbl
 
@@ -358,6 +370,12 @@ class Field(Model):
 
             #if self.mode==Mode.Training or self.mode==Mode.DataGeneration or self.mode==Mode.Reinforcement: # get labels for foxes
             labels = self.getLablesF(data)
+            # calcMoves = [np.argmax(l) for l in labels]
+            # errCounter = 0
+            # for k in range(len(moves)):
+            #     if(moves[k] != calcMoves[k]):
+            #         if(labels[k][calcMoves[k]] != labels[k][moves[k]]):
+            #             errCounter += 1
             
             self.setNextPos(self.foxes, moves)        
             self.scheduleFox.step()
