@@ -57,7 +57,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/utils/statReinforce.py",
-            "args": ["F"],
+            "args": ["R"],
             "console": "integratedTerminal"
         }
     ]

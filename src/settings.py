@@ -10,12 +10,16 @@ fieldH = 100
 RabitN = 600
 FoxN = 200
 
-randomMoveP = 0.05 # the probability that the Agent will move in a random direction
+randomMoveP = 0.25 # the probability that the Agent will move in a random direction
 
 mr = 1 # move radius: how far the agent can step from curent position
 lblShape = mr*2 + 1 # label will be an array of shape [lblShape, lblShape] 
-moveDirections = lblShape^2 # number of ways an Agent can move from his current pozition (including staying on the same place)
+moveDirections = lblShape**2 # number of ways an Agent can move from his current pozition (including staying on the same place)
 vr = 4 # viewRadius: number of cell visible for estimating current situation
+
+def setDieOfHunger(value):
+    global dieOfHunger
+    dieOfHunger = value
 
 trainingDataDir = os.path.abspath(r"./trainingData")
 if not os.path.exists(trainingDataDir):

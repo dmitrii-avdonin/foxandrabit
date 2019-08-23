@@ -11,16 +11,11 @@ class BaseAgent(Agent):
         self.isDead = False
         self.feedback = 0
 
-    def isBuried(self): #  added this method in order to avoid that an Agent just died and does not get processed
-        return self.isDead and self.feedback == 0
-
 
     def setDead(self):
         self.isDead = True
-        tmpPos = self.pos
         self.model.grid.remove_agent(self)
         self.model.getScheduler(self.agentType).remove(self)
-        self.pos = tmpPos # needed for cases when rabit is eaten by fox, evaluation happens during rabits turn and we need pos to get the state
 
 
     def setNextPos(self, direction):

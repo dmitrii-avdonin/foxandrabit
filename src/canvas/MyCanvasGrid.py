@@ -52,9 +52,10 @@ def terain_portrayal(x, y, cell):
     return portrayal    
 
 def rabit_portrayal(agent):
+    color = "black" if agent.isDead else "blue"
     portrayal = {"Shape": "circle",
                  "Filled": "true",
-                 "Color": "blue",
+                 "Color": color,
                  "r": 0.8}
     return portrayal    
 

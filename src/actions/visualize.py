@@ -3,9 +3,11 @@ from settings import fieldW, fieldH, FoxN, RabitN, vr, Mode
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import ChartModule
 from field.Field import Field
+import settings
 
 
 def visualize(args):
+    settings.setDieOfHunger(False)
     ppd = 8 #pixels per dimension
     width = 150
     height = 140

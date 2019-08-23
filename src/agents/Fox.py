@@ -1,5 +1,6 @@
 from .baseAgent import BaseAgent
 from settings import AgentType
+import settings
 
 class Fox(BaseAgent):
     InitialFullness = 2.
@@ -28,9 +29,8 @@ class Fox(BaseAgent):
             (x, y) = self.nextPos
             rabit = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Rabit)
             if(rabit != None):
-                self.fullness += Fox.EatARabit
+                self.fullness += rabit.wasBitten(Fox.EatARabit)
                 self.feedback = 1
-                rabit.setDead()
                 rabit.feedback = -1
 
         self.applyHungerAndEvaluateFullness()
@@ -44,8 +44,11 @@ class Fox(BaseAgent):
     def applyHungerAndEvaluateFullness(self):
         self.fullness -= Fox.Hunger
         if(self.fullness <= 0):
-            self.setDead()
-            self.feedback = -1
+            if(settings.dieOfHunger in (None, True)):                            
+                self.setDead()                
+            else: 
+                self.fullness = Fox.InitialFullness
+            #self.feedback = -1  # temporary commenting since NN does not know about Agent Fullness
 
 
     def step(self):

@@ -18,18 +18,20 @@ def generateTrainingDataSet(args):
     field = Field(width, height, countR, countF, Mode.DataGeneration)
 
     while True:    
-        agent, data, label, agentsFeedback, moves  = field.step()
+        agent, data, label, agentsFeedback, moves, movesPredicted  = field.step()
         trainData = trainDataR if agent==AgentType.Rabit else trainDataF
         trainLabels = trainLabelsR if agent==AgentType.Rabit else trainLabelsF
 
         c=0
         for i in range(len(data)):
+            if(agent==AgentType.Rabit and moves[i]==-1): # rabit was eaten on previous fox step 
+                continue
             if data[i] not in trainData:
                 trainData.append(data[i])
                 trainLabels.append(label[i])
             else:
                 c += 1
-        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>5000):
+        if(agent==AgentType.Fox and c > countF/4 or len(trainDataF)>20000):
             break
 
         if(field.aliveRabitsCount()<countR/4 or field.aliveFoxesCount()<countF/4):  # Restart the world if there are less then 1/4 of rabits or foxes  

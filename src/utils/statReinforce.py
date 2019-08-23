@@ -8,7 +8,7 @@ import sys
 from time import time
 
 sys.path.append('.\src')
-from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF
+from settings import pathToDataR, pathToDataF, pathToLabelR, pathToLabelF, moveDirections
 
 global data, label, delta, count, figName
 
@@ -106,10 +106,10 @@ def updatesCount(plt):
 def updateSize(plt):
     #avgAbsDelta =  np.array([ np.sum(np.abs(a))/len(a) for a in delta if np.any(a)])
     avgAbsDelta =  np.array([ np.max(np.abs(a)) for a in delta if np.any(a)])
-    bins =  [i * 0.05 for i in range(41)]
+    bins =  [i * 0.05 for i in range(100)]
     digitized = np.digitize(avgAbsDelta, bins)
     unique, counts = np.unique(digitized, return_counts=True)
-    labels =  ["<" + str(round(bins[u], 2)) for u in unique]
+    labels =  ["<" + str(round(bins[u-1], 2)) for u in unique]
 
     plt.subplot(222)
     plt.bar(range(len(unique)), counts, tick_label=labels)
@@ -141,8 +141,13 @@ if __name__ == "__main__":
 
     figName += " labels reinforcement stats"
 
-    #data = loadNpArrayFromFile(pathToData)
+    data = loadNpArrayFromFile(pathToData)
     label = loadNpArrayFromFile(pathToLabel)
+    # adding aditional dimenion for metadata if it doesn't exit yet
+    emptyDim = np.zeros(moveDirections)
+    if(len(label.shape)==2):
+        label = np.insert(label[:,np.newaxis], [1, 1, 1], emptyDim, axis=1)    
+
 
     delta = label[:, 1, :]
     count = label[:, 2, :]

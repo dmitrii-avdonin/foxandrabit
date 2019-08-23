@@ -105,7 +105,7 @@ class Field(Model):
     def getStates(self, agentList):
         states = []
         for a in agentList:
-            if(not a.isBuried()):
+            if(not a.isDead):
                 nbh = self.get_neighborhood(a.pos)
                 agentState = [[ [] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)]
                 for i in range(vr*2+1):
@@ -123,7 +123,7 @@ class Field(Model):
                 agentState = [[ [0, 0, 0] for j in range(vr*2 +1)] for i in range(vr*2 + 1 + 1)] 
             for j in range(vr*2+1):
                 agentState[vr*2 + 1][j] = [0, 0, 0]
-            if(not a.isBuried()):
+            if(not a.isDead):
                 agentState[vr*2 + 1][0] = [a.fullness, 0, 0]
 
             #printCoordsArray(agentState)
@@ -194,7 +194,7 @@ class Field(Model):
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
 
-            if(not self.rabits[i].isBuried()):
+            if(not self.rabits[i].isDead):
                 # calculating the feedback for each direction where the agend can go
                 for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
                     for dy in self.getShift(vr, mr): # samve for y coordinate  
@@ -250,7 +250,7 @@ class Field(Model):
             #printCoordsArray(state, 0) #printing food amount on cells
             #printCoordsArray(state, 1, True) # printing agents location
 
-            if(not self.rabits[i].isBuried()):
+            if(not self.foxes[i].isDead):
                 # calculating the feedback for each direction where the agend can go
                 for dx in self.getShift(vr, mr): # shift by x for current agent - the agent is in the center of the crState Array = crState[vr][vr]
                     for dy in self.getShift(vr, mr): # samve for y coordinate  
@@ -313,6 +313,47 @@ class Field(Model):
                 moves.append(np.argmax(m))
         return moves
 
+    def makeChoice(self, prob):
+        choice = 0
+        rand = self.random.random()
+        for i in range(len(prob)):
+            choice += prob[i]
+            if(rand<=choice):
+                return i
+
+        raise Exception("ERROR: This should not happen")        
+
+    def applyMovesProbabylityRandomization(self, predictedMoves):
+        moves = []
+        for m in predictedMoves:
+            minm = np.min(m) 
+            m1 = m - minm + 1
+            mProb = m1 / sum(m1)
+            moves.append(self.makeChoice(mProb))
+
+        return moves    
+
+    def applyMovesProbabylityRandomizationVisualization(self, predictedMoves):
+        moves = []
+        for m in predictedMoves:
+            m1 = np.array(m)
+            asort = np.argsort(m1)
+            size = len(m1)  
+            foi = -1 # first option index
+            for i in range(size):
+                if(i>=size-4 and m[asort[i]]>=0 or i==size-1): # will take 4 best options if the options are good OR the last (best but yet negative) option if all options are negative
+                    if(foi == -1):
+                        foi = i
+                    m1[asort[i]] = m1[asort[i]] - m[asort[foi]] + 0.1
+                else:
+                    m1[asort[i]] = 0
+            
+            mProb = m1 / sum(m1)
+
+            moves.append(self.makeChoice(mProb))
+            
+        return moves    
+
     def step(self):
         print("RCount " + str(self.aliveRabitsCount()) )
         print("FCount " + str(self.aliveFoxesCount()) )
@@ -324,6 +365,7 @@ class Field(Model):
         labels = None
         data = None
         agentsFeedback = None
+        movesP = None
         agentType = -1
 
         if self.rabitsMove:
@@ -331,9 +373,11 @@ class Field(Model):
             self.clearAgentsInFiledCells() # scheduleRabit.step() will initialize the next filedCells with Rabits 
             
             data = self.getStatesR()
-            if self.mode==Mode.Reinforcement:
-                movesP = predict(toNpArray(data), True, False)
-                moves = self.applyMovesRandomization(movesP)
+            movesP = predict(toNpArray(data), True, False)
+            if self.mode==Mode.Reinforcement:                
+                moves = self.applyMovesProbabylityRandomization(movesP)
+            elif self.mode==Mode.Visualization:
+                moves = self.applyMovesProbabylityRandomizationVisualization(movesP)
             else:
                 moves = predict(toNpArray(data), True)
 
@@ -362,9 +406,11 @@ class Field(Model):
         else:
             agentType = AgentType.Fox
             data = self.getStatesF()
-            if self.mode==Mode.Reinforcement:
-                movesP = predict(toNpArray(data), False, False)
-                moves = self.applyMovesRandomization(movesP)
+            movesP = predict(toNpArray(data), False, False)
+            if self.mode==Mode.Reinforcement:                
+                moves = self.applyMovesProbabylityRandomization(movesP)
+            elif self.mode==Mode.Visualization:
+                moves = self.applyMovesProbabylityRandomizationVisualization(movesP)
             else:
                 moves = predict(toNpArray(data), False)
 
@@ -393,4 +439,4 @@ class Field(Model):
         self.rabitsMove = not self.rabitsMove
         self.stepCounter += 1
         print("Field Step = " + str(self.stepCounter))
-        return (agentType, data, labels, agentsFeedback, moves)
+        return (agentType, data, labels, agentsFeedback, moves, movesP)
