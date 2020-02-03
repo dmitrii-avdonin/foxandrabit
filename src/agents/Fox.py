@@ -14,43 +14,33 @@ class Fox(BaseAgent):
         BaseAgent.setDead(self)
         Fox.DeadCount += 1
 
-    def makeStep(self, posToGo):
-        self.fullness = self.fullness
 
-        if self.model.grid.out_of_bounds(self.nextPos):
-            self.applyHungerAndEvaluateFullness()
-            return 
+    def eatApplyHungerAndEvaluateFullness(self):
+        (x, y) = self.pos
+        rabit = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Rabit)
+        if(rabit != None):
+            self.fullness += rabit.wasBitten(Fox.EatARabit)
+            self.feedback = 1
+            rabit.feedback = -1
 
-        if(self.nextPos == self.pos):
-            self.applyHungerAndEvaluateFullness()
-            return             
-
-        if not self.model.grid.is_cell_empty(self.nextPos) :
-            (x, y) = self.nextPos
-            rabit = self.model.grid.getFirstAgentOfTypeIfExist(x, y, AgentType.Rabit)
-            if(rabit != None):
-                self.fullness += rabit.wasBitten(Fox.EatARabit)
-                self.feedback = 1
-                rabit.feedback = -1
-
-        self.applyHungerAndEvaluateFullness()
-
-        if(not self.isDead):
-            self.model.grid.move_agent(self, self.nextPos)
-
-        return
-
-
-    def applyHungerAndEvaluateFullness(self):
         self.fullness -= Fox.Hunger
+
         if(self.fullness <= 0):
             if(settings.dieOfHunger in (None, True)):                            
                 self.setDead()                
             else: 
                 self.fullness = Fox.InitialFullness
-            #self.feedback = -1  # temporary commenting since NN does not know about Agent Fullness
+            self.feedback = -1
 
 
     def step(self):
-        self.makeStep(self.nextPos)
-        return
+        if(not self.isDead):
+            if not self.model.grid.out_of_bounds(self.nextPos):
+                self.model.grid.move_agent(self, self.nextPos)
+            self.nextPos = None # self.pos is already nextPost, so nextPos not needed
+            (x,y) = self.pos
+            self.model.cells[x][y].foxesCount += 1
+
+
+    def advance(self):
+        self.eatApplyHungerAndEvaluateFullness()        

@@ -10,6 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
             "args": ["visualize"],
+            "justMyCode": false,
             "console": "integratedTerminal"
         },
         {

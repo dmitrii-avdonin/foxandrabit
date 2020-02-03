@@ -3,15 +3,14 @@ class FieldCell:
     inc = 0.3
     def __init__(self, randint):
         self.rabitsCount = None
-        self.foxesCount = None
         self.foodExists = False
         self.food = 0.
         if randint(1, 10) <= 2:
-            self.food = FieldCell.MaxFood
+            self.food = 0.9
             self.foodExists = True
 
     def removeFood(self, requiredAmount):
-        actualAmount = min(self.food/self.rabitsCount, requiredAmount) # each rabit on current cell will eat equal amount of food
+        actualAmount = min(self.food, requiredAmount)
         self.food -= actualAmount
         return actualAmount
 

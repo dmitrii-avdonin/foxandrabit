@@ -1,24 +1,12 @@
 import sys
-from actions.generateTrainingData import generateTrainingDataSet
 from actions.initModels import initModels
-from actions.startTraining import startTraining
 from actions.visualize import visualize
-from actions.trainFromFile import trainFromFile
-from actions.reinforcement import reinforcement
-
-
-
 
 
 
 Actions = {
     "initModels" : initModels,
-    "trainModels" : startTraining,
-    "trainFromFile" : trainFromFile,
-    "visualize" : visualize,
-    "generateData": generateTrainingDataSet,
-    "initializeModels" : initModels,
-    "reinforcement": reinforcement
+    "visualize" : visualize
 }
     
 

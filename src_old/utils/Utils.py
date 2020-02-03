@@ -42,15 +42,4 @@ def printCoordsArray(arr, elemIdx=None, printAsInt=False):
                     else:
                         line += "{0:6.0f} ".format(val)
             print(line)
-        print()
-
-
-def get_neighborhood(pos, vr):
-    x, y = pos
-
-    coords = [[(0, 0) for j in range(vr*2 +1)] for i in range(vr*2 +1)]
-    for dy in range(-vr, vr + 1):
-        for dx in range(-vr, vr + 1):
-            coords[vr+dx][vr+dy]= (x+dx, y+dy)
-
-    return coords        
+        print()     

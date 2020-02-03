@@ -7,7 +7,7 @@ import settings
 
 
 def visualize(args):
-    settings.setDieOfHunger(True)
+    settings.setDieOfHunger(False)
     ppd = 8 #pixels per dimension
     width = 150
     height = 140
@@ -17,9 +17,10 @@ def visualize(args):
 
     FoxesNr = {"Label": "FoxesNr", "Color": "red"}
     RabitsNr = {"Label": "RabitsNr", "Color": "blue"}
-    
+    chart_count = ChartModule([FoxesNr, RabitsNr], data_collector_name='datacollector')
+
     server = ModularServer(Field,
-                        [grid],
+                        [grid, chart_count],
                         "Rabit VS Fox Model",
                         {"width": width , "height": height, "num_rabits": countR, "num_foxes": countF, "mode": Mode.Visualization, "seed": 999})
     server.port = 8521 # The default
